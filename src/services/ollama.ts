@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const ollamaApiInstance = axios.create({
-  url: "http://localhost:11434",
+  baseURL: "http://localhost:11434",
 });
 
 export function getStatus() {
