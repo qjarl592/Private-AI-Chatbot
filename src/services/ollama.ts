@@ -1,8 +1,10 @@
 import axios from "axios";
 import { z } from "zod";
 
+const baseURL = "http://localhost:11434";
 const ollamaApiInstance = axios.create({
-  baseURL: "http://localhost:11434",
+  baseURL,
+  responseType: "json",
 });
 
 const OllamaModelDetailSchema = z.object({
@@ -33,4 +35,24 @@ export type OllamaModelList = z.infer<typeof OllamaModelListSchema>;
 export async function getStatus() {
   const { data } = await ollamaApiInstance.get("/api/tags");
   return OllamaModelListSchema.parse(data);
+}
+
+interface ChatItem {
+  role: string;
+  content: string;
+}
+
+interface OllamaChatProps {
+  model: string;
+  messages: ChatItem[];
+}
+
+export function postChat(props: OllamaChatProps) {
+  return fetch(`${baseURL}/api/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ...props, stream: true }),
+  });
 }
