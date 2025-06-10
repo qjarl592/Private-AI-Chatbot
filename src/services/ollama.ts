@@ -37,7 +37,7 @@ export async function getStatus() {
   return OllamaModelListSchema.parse(data);
 }
 
-interface ChatItem {
+export interface ChatItem {
   role: string;
   content: string;
 }
