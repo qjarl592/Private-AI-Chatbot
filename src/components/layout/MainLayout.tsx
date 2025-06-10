@@ -1,23 +1,17 @@
-import ChatContainer from "@/components/chat/ChatContainer";
-import Sidebar from "@/components/sidebar/Sidebar";
 import { getStatus } from "@/services/ollama";
-import { useModelListStore } from "@/store/modelListStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import Sidebar from "../sidebar/Sidebar";
 
-export default function Home() {
+export default function MainLayout() {
   const navigate = useNavigate();
-  const setModelList = useModelListStore((state) => state.setModelList);
+  const location = useLocation();
+
   const { data, isFetching, error } = useQuery({
     queryKey: ["getStatus"],
     queryFn: getStatus,
   });
-
-  useEffect(() => {
-    if (!data) return;
-    setModelList(data.models);
-  }, [data, setModelList]);
 
   useEffect(() => {
     if (error) {
@@ -25,16 +19,25 @@ export default function Home() {
     }
   }, [error, navigate]);
 
+  useEffect(() => {
+    const pathList = location.pathname.split("/").filter((p) => p.length > 0);
+    if (pathList.length === 1 && pathList[0] === "chat") {
+      navigate("/chat/new");
+    }
+  }, [location, navigate]);
+
   if (!data && isFetching) {
     return <div>loading...</div>;
   }
 
   if (data) {
     return (
-      <div className="w-screen">
+      <>
         <Sidebar />
-        <ChatContainer />
-      </div>
+        <main className="w-screen">
+          <Outlet />
+        </main>
+      </>
     );
   }
 

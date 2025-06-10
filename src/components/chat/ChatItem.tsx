@@ -7,7 +7,6 @@ interface Props {
 
 export default function ChatItem({ side }: Props) {
   const chunkList = useChatStreamStore((state) => state.chunkList);
-  console.log(chunkList);
   return (
     <div
       className={cn(
