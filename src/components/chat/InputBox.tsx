@@ -11,27 +11,71 @@ import {
   type KeyboardEvent,
   type Ref,
 } from "react";
-import { postChat } from "@/services/ollama";
+import { postChatStream } from "@/services/ollama";
 import { useChatStreamStore } from "@/store/chatStreamStore";
+import { useIdb, type ChatHistoryItem } from "@/hooks/useIdb";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
+  chatId?: string;
   align: "center" | "bottom";
-  onUpdateHeight: () => void;
+  onUpdateHeight?: () => void;
   ref?: Ref<HTMLDivElement>;
 }
 
-export default function InputBox({ align, onUpdateHeight, ref }: Props) {
+export default function InputBox({
+  chatId,
+  align,
+  onUpdateHeight,
+  ref,
+}: Props) {
   const [model, setModel] = useState<null | string>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { clearMsg, appendMsg } = useChatStreamStore();
+  const { clearMsg, appendMsg, chunkList } = useChatStreamStore();
+  const { startNewChat, logChatHistory } = useIdb();
+  const navigate = useNavigate();
 
-  const sendMsg = async (msg: string) => {
+  const startChat = async (msg: string) => {
     if (!model) return;
+
+    // 대화 로그 기록
+    const newId = await startNewChat();
+    const historyItem: ChatHistoryItem = {
+      model,
+      role: "user",
+      content: msg,
+    };
+
+    // const curMsg = {
+    //   role: "user",
+    //   content: msg,
+    // };
+    // const title = await recommendChatTitle({ model, messages: [curMsg] });
+    // console.log(title);
+
+    await logChatHistory(newId, historyItem);
+    return newId;
+  };
+
+  const sendMsg = async (msg: string, chatId: string) => {
+    if (!model) return;
+
+    // 대화 로그 기록
+    console.log("logging send");
+    const historyItem: ChatHistoryItem = {
+      model,
+      role: "user",
+      content: msg,
+    };
+    await logChatHistory(chatId, historyItem);
+
+    // ollama chat api call
+    console.log("chat streaming");
     const curMsg = {
       role: "user",
       content: msg,
     };
-    const res = await postChat({ model, messages: [curMsg] });
+    const res = await postChatStream({ model, messages: [curMsg] });
     if (!res.ok || res.body === null) return;
 
     const reader = res.body.getReader();
@@ -43,31 +87,48 @@ export default function InputBox({ align, onUpdateHeight, ref }: Props) {
       const chunk = decoder.decode(value, { stream: true });
       const chunkJson = JSON.parse(chunk);
       const { message, done } = chunkJson;
-      console.log(message.content);
 
       appendMsg(message.content);
       if (done) {
         break;
       }
     }
+
+    // 대화 로그 기록
+    console.log("logging send");
+    const historyAnsItem: ChatHistoryItem = {
+      model,
+      role: "assistant",
+      content: chunkList.join(""),
+    };
+    await logChatHistory(chatId, historyAnsItem);
     clearMsg();
   };
 
-  const onClickSend = () => {
+  const onClickSend = async () => {
     if (!textareaRef.current) return;
     const msg = textareaRef.current.value.trim();
     if (msg.length === 0) return;
-    sendMsg(msg);
+
+    if (chatId) {
+      sendMsg(msg, chatId);
+      return;
+    }
+
+    const newId = await startChat(msg);
+    if (newId) {
+      navigate(`/chat/${newId}`, { state: msg });
+    }
   };
 
   const onEnter = (e: KeyboardEvent) => {
-    // if (!e.nativeEvent.isComposing) return;
+    if (e.nativeEvent.isComposing) return;
     if (e.code.toLocaleLowerCase() !== "enter") return;
+    if (e.shiftKey) return;
     e.preventDefault();
     onClickSend();
   };
 
-  console.log(model);
   const onSelectModel = useCallback((value: string) => {
     setModel(value);
   }, []);
@@ -77,6 +138,7 @@ export default function InputBox({ align, onUpdateHeight, ref }: Props) {
       ref={ref}
       className={cn("fixed z-10 flex w-[calc(100%-448px)] flex-col gap-0 p-0", {
         "bottom-8": align === "bottom",
+        "bottom-1/2 translate-y-full": align === "center",
       })}
     >
       <Textarea

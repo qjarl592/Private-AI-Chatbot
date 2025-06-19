@@ -3,10 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../sidebar/Sidebar";
+import { useModelListStore } from "@/store/modelListStore";
 
 export default function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setModelList } = useModelListStore();
 
   const { data, isFetching, error } = useQuery({
     queryKey: ["getStatus"],
@@ -18,6 +20,11 @@ export default function MainLayout() {
       navigate("/guide");
     }
   }, [error, navigate]);
+
+  useEffect(() => {
+    if (!data) return;
+    setModelList(data.models);
+  }, [data, setModelList]);
 
   useEffect(() => {
     const pathList = location.pathname.split("/").filter((p) => p.length > 0);

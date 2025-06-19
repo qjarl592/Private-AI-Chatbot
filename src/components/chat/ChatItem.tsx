@@ -1,12 +1,14 @@
 import { cn } from "@/lib/utils";
-import { useChatStreamStore } from "@/store/chatStreamStore";
+// import { useChatStreamStore } from "@/store/chatStreamStore";
+import type { ReactNode } from "react";
 
 interface Props {
   side: "left" | "right";
+  children: ReactNode;
 }
 
-export default function ChatItem({ side }: Props) {
-  const chunkList = useChatStreamStore((state) => state.chunkList);
+export default function ChatItem({ side, children }: Props) {
+  // const chunkList = useChatStreamStore((state) => state.chunkList);
   return (
     <div
       className={cn(
@@ -14,7 +16,7 @@ export default function ChatItem({ side }: Props) {
         { "self-end": side === "right", "w-[80%] self-start": side === "left" }
       )}
     >
-      {chunkList.join("")}
+      {children}
     </div>
   );
 }

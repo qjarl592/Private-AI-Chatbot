@@ -13,3 +13,10 @@ export function genUniqueId(idList: string[]) {
   } while (idList.includes(id));
   return id;
 }
+
+export function removeQuotes(str: string) {
+  if (str.startsWith('"') && str.endsWith('"')) {
+    return str.slice(1, -1);
+  }
+  return str;
+}

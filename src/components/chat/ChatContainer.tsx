@@ -4,7 +4,11 @@ import InputBox from "./InputBox";
 import { Button } from "../shadcn/button";
 import { ChevronDown } from "lucide-react";
 
-export default function ChatContainer() {
+interface Props {
+  chatId?: string;
+}
+
+export default function ChatContainer({ chatId }: Props) {
   const inputBoxRef = useRef<HTMLDivElement>(null);
   const [inputBoxHeight, setInputBoxHeight] = useState(0);
 
@@ -32,7 +36,7 @@ export default function ChatContainer() {
         className="w-full px-24 pt-8"
         style={{ paddingBottom: `${32 + inputBoxHeight + 32}px` }}
       >
-        <ChatList />
+        {chatId && <ChatList chatId={chatId} />}
         <Button
           className="fixed z-10 flex h-14 w-[calc(100%-448px)] justify-center rounded-none"
           variant="ghost"
@@ -49,6 +53,7 @@ export default function ChatContainer() {
           <ChevronDown className="bg-transparent" />
         </Button>
         <InputBox
+          chatId={chatId}
           ref={inputBoxRef}
           align="bottom"
           onUpdateHeight={updateInputBoxHeight}
