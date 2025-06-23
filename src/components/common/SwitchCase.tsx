@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 
 interface Props<T extends string | number> {
   value: T;
-  caseBy: Record<T, ReactNode | null>;
+  caseBy: Partial<Record<T, ReactNode | null>>;
   defaultCase?: ReactNode | null;
 }
 
