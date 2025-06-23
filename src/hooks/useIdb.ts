@@ -1,155 +1,88 @@
 import { genUniqueId } from "@/lib/utils";
-import type { ChatItem } from "@/services/ollama";
-import { useQuery } from "@tanstack/react-query";
-import { openDB, type IDBPDatabase } from "idb";
+import {
+  CHAT_STORE,
+  IDB_ERRORS,
+  META_STORE,
+  useIdbStore,
+  type ChatHistoryItem,
+  type ChatInfo,
+} from "@/store/IdbStore";
 import { useCallback } from "react";
 
-const DB_NAME = "private-ai-chat-db";
-const DB_VERSION = 1;
-const META_STORE = "meta";
-const CHAT_STORE = "chat";
-
-export interface ChatHistoryItem extends ChatItem {
-  model?: string;
-}
-
-export interface ChatInfo {
-  id: string;
-  title: string;
-}
-
-interface IdbItem {
-  key: string;
-  value: ChatHistoryItem[] | ChatInfo[];
-}
-
-const initIdb = async (): Promise<IDBPDatabase<IdbItem>> => {
-  return await openDB<IdbItem>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(META_STORE)) {
-        db.createObjectStore(META_STORE, { keyPath: "key" });
-      }
-      if (!db.objectStoreNames.contains(CHAT_STORE)) {
-        db.createObjectStore(CHAT_STORE, { keyPath: "key" });
-      }
-    },
-  });
-};
+const CHAT_ID_LIST_KEY = "chat_id";
 
 export function useIdb() {
-  const { data: idbInstance } = useQuery({
-    queryKey: ["indexeddb"],
-    queryFn: initIdb,
-    staleTime: Number.POSITIVE_INFINITY,
-    gcTime: Number.POSITIVE_INFINITY,
-    retry: false,
-  });
+  const { idbInstance, addItem, getItem, updateItem, deleteItem } =
+    useIdbStore();
 
-  const addItem = useCallback(
-    async (storage: string, item: IdbItem) => {
-      if (!idbInstance) return;
-      const tx = idbInstance.transaction(storage, "readwrite");
-      const store = tx.objectStore(storage);
-      await store.add(item);
-      await tx.done;
-    },
-    [idbInstance]
-  );
-
-  const getItem = useCallback(
-    async (storage: string, key: number | string) => {
-      if (!idbInstance) return null;
-      if (!idbInstance.objectStoreNames.contains(storage)) return null;
-      return await idbInstance.get(storage, key);
-    },
-    [idbInstance]
-  );
-
-  // const getAllItems = async (storage: string) => {
-  //   if (!idbInstance) return null;
-  //   return await idbInstance.getAll(storage);
-  // };
-
-  const updateItem = useCallback(
-    async (storage: string, item: IdbItem) => {
-      if (!idbInstance) return;
-      const tx = idbInstance.transaction(storage, "readwrite");
-      const store = tx.objectStore(storage);
-      await store.put(item);
-      await tx.done;
-    },
-    [idbInstance]
-  );
-
-  const deleteItem = async (storage: string, key: string) => {
-    if (!idbInstance) return;
-    const tx = idbInstance.transaction(storage, "readwrite");
-    const store = tx.objectStore(storage);
-    await store.delete(key);
-    await tx.done;
-  };
+  const checkIsInit = useCallback(() => {
+    return !!idbInstance;
+  }, [idbInstance]);
 
   const getAllChatId = useCallback(async () => {
-    const chatIdListKey = "chat_id";
-    const allIdList = await getItem(META_STORE, chatIdListKey);
-    if (allIdList) {
-      return allIdList;
-    }
-    throw new Error("cannot find chat logs");
+    const allIdList = await getItem(META_STORE, CHAT_ID_LIST_KEY);
+    return allIdList.value as ChatInfo[];
   }, [getItem]);
 
-  const getChatHistory = async (chatId: string) => {
-    const history = await getItem(CHAT_STORE, chatId);
-    if (history.value) {
+  const getChatHistory = useCallback(
+    async (chatId: string) => {
+      const history = await getItem(CHAT_STORE, chatId);
       return history.value as ChatHistoryItem[];
-    }
-    throw new Error("cannot find history");
-  };
+    },
+    [getItem]
+  );
 
-  const startNewChat = async () => {
+  const startNewChat = useCallback(async () => {
     // meta store 에 새로운 id 추가
-    const chatIdListKey = "chat_id";
-    const idList = await getItem(META_STORE, chatIdListKey);
-    const newId = genUniqueId(idList ? idList.value : []);
-    const newItem = { id: newId, title: "(untitled)" };
-    if (!idList) {
-      await addItem(META_STORE, { key: chatIdListKey, value: [newItem] });
-    } else {
+    try {
+      const chatInfoList = await getAllChatId();
+      const chatIdList = chatInfoList.map((info) => info.id);
+      const newId = genUniqueId(chatIdList);
+      const newItem: ChatInfo = { id: newId, title: "(untitled)" };
       await updateItem(META_STORE, {
-        key: chatIdListKey,
-        value: [...idList.value, newItem],
+        key: CHAT_ID_LIST_KEY,
+        value: [...chatInfoList, newItem],
       });
+      await addItem(CHAT_STORE, { key: newId, value: [] });
+    } catch (e) {
+      if (e instanceof Error && e.message === IDB_ERRORS.ITEM_NOT_FOUND) {
+        const newId = genUniqueId([]);
+        const newItem: ChatInfo = { id: newId, title: "(untitled)" };
+        await addItem(META_STORE, { key: CHAT_ID_LIST_KEY, value: [newItem] });
+        await addItem(CHAT_STORE, { key: newId, value: [] });
+      } else {
+        throw e;
+      }
     }
+  }, [getAllChatId, addItem, updateItem]);
 
-    // chat store 에 빈 history 추가
-    await addItem(CHAT_STORE, { key: newId, value: [] });
+  const logChatHistory = useCallback(
+    async (chatId: string, historyItem: ChatHistoryItem) => {
+      const prevHistory = await getItem(CHAT_STORE, chatId);
+      const prevHistoryValue = prevHistory.value as ChatHistoryItem[];
+      await updateItem(CHAT_STORE, {
+        key: chatId,
+        value: [...prevHistoryValue, historyItem],
+      });
+    },
+    [getItem, updateItem]
+  );
 
-    return newId;
-  };
-
-  const logChatHistory = async (
-    chatId: string,
-    historyItem: ChatHistoryItem
-  ) => {
-    const prevHistory = await getItem(CHAT_STORE, chatId);
-    await updateItem(CHAT_STORE, {
-      key: chatId,
-      value: [...prevHistory.value, historyItem],
-    });
-  };
-
-  const deleteChat = async (chatId: string) => {
-    const chatIdListKey = "chat_id";
-    const idList = await getItem(META_STORE, chatIdListKey);
-    await updateItem(META_STORE, {
-      key: chatIdListKey,
-      value: idList.value.filter((id: string) => id !== chatId),
-    });
-    await deleteItem(CHAT_STORE, chatId);
-  };
+  const deleteChat = useCallback(
+    async (chatId: string) => {
+      const allInfo = await getItem(META_STORE, CHAT_ID_LIST_KEY);
+      const allInfoValue = allInfo.value as ChatInfo[];
+      await updateItem(META_STORE, {
+        key: CHAT_ID_LIST_KEY,
+        value: allInfoValue.filter((info) => info.id !== chatId),
+      });
+      await deleteItem(CHAT_STORE, chatId);
+    },
+    [getItem, updateItem, deleteItem]
+  );
 
   return {
-    idbInstance,
+    checkIsInit,
     getAllChatId,
     getChatHistory,
     startNewChat,
