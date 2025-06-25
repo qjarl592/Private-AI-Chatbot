@@ -25,6 +25,5 @@ export default function Chat() {
     // alert 띄우기
     return <Navigate to="/chat" replace />;
   }
-
   return <>loading</>;
 }
