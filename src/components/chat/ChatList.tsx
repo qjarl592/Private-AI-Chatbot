@@ -1,4 +1,4 @@
-import { useIdb } from "@/hooks/useChatIdb";
+import { useChatIdb } from "@/hooks/useChatIdb";
 import ChatItem from "./ChatItem";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -9,12 +9,13 @@ interface Props {
 }
 
 export default function ChatList({ chatId }: Props) {
-  const { getChatHistory } = useIdb();
+  const { idbInstance, getChatHistory } = useChatIdb();
   const { done, chunkList } = useChatStreamStore();
 
   const { data } = useQuery({
     queryKey: ["getChatHistory", chatId],
     queryFn: () => getChatHistory(chatId),
+    enabled: !!idbInstance,
   });
 
   const chatList = useMemo(() => {

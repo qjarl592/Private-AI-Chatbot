@@ -1,17 +1,16 @@
-import { useIdb, type ChatInfo } from "@/hooks/useChatIdb";
-import { useQuery } from "@tanstack/react-query";
+import { useChatIdb } from "@/hooks/useChatIdb";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
-  const { idbInstance, getAllChatId } = useIdb();
+  const { getAllChatId } = useChatIdb();
 
-  const { data, isFetching } = useQuery({
-    queryKey: ["getAllChatId", getAllChatId, idbInstance],
+  const { data } = useSuspenseQuery({
+    queryKey: ["getAllChatId", getAllChatId],
     queryFn: getAllChatId,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
     retry: false,
-    enabled: !!idbInstance,
   });
 
   return (
@@ -19,17 +18,15 @@ export default function Sidebar() {
       Sidebar
       <nav className="flex flex-col">
         <NavLink to="/chat/new">new chat</NavLink>
-        {isFetching
-          ? "loading..."
-          : data?.value.map((chatId: ChatInfo) => (
-              <NavLink
-                key={`chat-${chatId.id}`}
-                className="max-w-64 overflow-hidden text-ellipsis border border-black"
-                to={chatId.id}
-              >
-                {chatId.title}
-              </NavLink>
-            ))}
+        {data.map((chatInfo) => (
+          <NavLink
+            key={`chat-${chatInfo.id}`}
+            className="max-w-64 overflow-hidden text-ellipsis border border-black"
+            to={chatInfo.id}
+          >
+            {chatInfo.title}
+          </NavLink>
+        ))}
       </nav>
     </div>
   );

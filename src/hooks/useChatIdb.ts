@@ -7,13 +7,17 @@ import {
   type ChatHistoryItem,
   type ChatInfo,
 } from "@/store/IdbStore";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 const CHAT_ID_LIST_KEY = "chat_id";
 
 export function useChatIdb() {
-  const { idbInstance, addItem, getItem, updateItem, deleteItem } =
+  const { idbInstance, initIdb, addItem, getItem, updateItem, deleteItem } =
     useIdbStore();
+
+  useEffect(() => {
+    initIdb();
+  }, [initIdb]);
 
   const checkIsInit = useCallback(() => {
     return !!idbInstance;
@@ -82,6 +86,7 @@ export function useChatIdb() {
   );
 
   return {
+    idbInstance,
     checkIsInit,
     getAllChatId,
     getChatHistory,

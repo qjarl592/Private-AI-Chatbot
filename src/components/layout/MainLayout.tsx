@@ -1,14 +1,16 @@
 import { getStatus } from "@/services/ollama";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../sidebar/Sidebar";
 import { useModelListStore } from "@/store/modelListStore";
+import { useChatIdb } from "@/hooks/useChatIdb";
 
 export default function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setModelList } = useModelListStore();
+  const { idbInstance } = useChatIdb();
 
   const { data, isFetching, error } = useQuery({
     queryKey: ["getStatus"],
@@ -40,7 +42,11 @@ export default function MainLayout() {
   if (data) {
     return (
       <>
-        <Sidebar />
+        {idbInstance && (
+          <Suspense>
+            <Sidebar />
+          </Suspense>
+        )}
         <main className="w-screen">
           <Outlet />
         </main>
