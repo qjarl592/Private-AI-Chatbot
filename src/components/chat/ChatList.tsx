@@ -1,4 +1,4 @@
-import { useIdb } from "@/hooks/useIdb";
+import { useIdb } from "@/hooks/useChatIdb";
 import ChatItem from "./ChatItem";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";

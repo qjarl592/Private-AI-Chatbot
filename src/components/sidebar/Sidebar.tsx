@@ -1,4 +1,4 @@
-import { useIdb, type ChatInfo } from "@/hooks/useIdb";
+import { useIdb, type ChatInfo } from "@/hooks/useChatIdb";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router-dom";
 

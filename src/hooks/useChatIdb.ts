@@ -11,7 +11,7 @@ import { useCallback } from "react";
 
 const CHAT_ID_LIST_KEY = "chat_id";
 
-export function useIdb() {
+export function useChatIdb() {
   const { idbInstance, addItem, getItem, updateItem, deleteItem } =
     useIdbStore();
 

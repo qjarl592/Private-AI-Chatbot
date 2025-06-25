@@ -13,7 +13,7 @@ import {
 } from "react";
 import { postChatStream } from "@/services/ollama";
 import { useChatStreamStore } from "@/store/chatStreamStore";
-import { useIdb } from "@/hooks/useIdb";
+import { useChatIdb } from "@/hooks/useChatIdb";
 import { useNavigate } from "react-router-dom";
 import type { ChatHistoryItem } from "@/store/IdbStore";
 
@@ -33,7 +33,7 @@ export default function InputBox({
   const [model, setModel] = useState<null | string>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { clearMsg, appendMsg, chunkList } = useChatStreamStore();
-  const { startNewChat, logChatHistory } = useIdb();
+  const { startNewChat, logChatHistory } = useChatIdb();
   const navigate = useNavigate();
 
   const startChat = async (msg: string) => {
