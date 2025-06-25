@@ -44,15 +44,15 @@ export function useIdb() {
         value: [...chatInfoList, newItem],
       });
       await addItem(CHAT_STORE, { key: newId, value: [] });
+      return newId;
     } catch (e) {
-      if (e instanceof Error && e.message === IDB_ERRORS.ITEM_NOT_FOUND) {
-        const newId = genUniqueId([]);
-        const newItem: ChatInfo = { id: newId, title: "(untitled)" };
-        await addItem(META_STORE, { key: CHAT_ID_LIST_KEY, value: [newItem] });
-        await addItem(CHAT_STORE, { key: newId, value: [] });
-      } else {
-        throw e;
-      }
+      if (!(e instanceof Error)) throw e;
+      if (e.message !== IDB_ERRORS.ITEM_NOT_FOUND) throw e;
+      const newId = genUniqueId([]);
+      const newItem: ChatInfo = { id: newId, title: "(untitled)" };
+      await addItem(META_STORE, { key: CHAT_ID_LIST_KEY, value: [newItem] });
+      await addItem(CHAT_STORE, { key: newId, value: [] });
+      return newId;
     }
   }, [getAllChatId, addItem, updateItem]);
 

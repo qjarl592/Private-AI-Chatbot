@@ -13,8 +13,9 @@ import {
 } from "react";
 import { postChatStream } from "@/services/ollama";
 import { useChatStreamStore } from "@/store/chatStreamStore";
-import { useIdb, type ChatHistoryItem } from "@/hooks/useIdb";
+import { useIdb } from "@/hooks/useIdb";
 import { useNavigate } from "react-router-dom";
+import type { ChatHistoryItem } from "@/store/IdbStore";
 
 interface Props {
   chatId?: string;
