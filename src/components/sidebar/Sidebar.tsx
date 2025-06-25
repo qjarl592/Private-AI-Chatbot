@@ -1,8 +1,10 @@
 import { useChatIdb } from "@/hooks/useChatIdb";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { NavLink } from "react-router-dom";
+import ChatLink from "./ChatLink";
+import { useState } from "react";
 
 export default function Sidebar() {
+  const [isSomeOpen, setIsSomeOpen] = useState(false);
   const { getAllChatId } = useChatIdb();
 
   const { data } = useSuspenseQuery({
@@ -13,19 +15,27 @@ export default function Sidebar() {
     retry: false,
   });
 
+  console.log("isO", isSomeOpen);
+
   return (
     <div className="fixed top-0 left-0 z-10 h-screen w-64 shadow-lg">
       Sidebar
       <nav className="flex flex-col">
-        <NavLink to="/chat/new">new chat</NavLink>
+        <ChatLink
+          title="new chate"
+          isSomeOpen={isSomeOpen}
+          onOpen={() => setIsSomeOpen(true)}
+          onClose={() => setIsSomeOpen(false)}
+        />
         {data.map((chatInfo) => (
-          <NavLink
+          <ChatLink
             key={`chat-${chatInfo.id}`}
-            className="max-w-64 overflow-hidden text-ellipsis border border-black"
-            to={chatInfo.id}
-          >
-            {chatInfo.title}
-          </NavLink>
+            title={chatInfo.title}
+            chatId={chatInfo.id}
+            isSomeOpen={isSomeOpen}
+            onOpen={() => setIsSomeOpen(true)}
+            onClose={() => setIsSomeOpen(false)}
+          />
         ))}
       </nav>
     </div>

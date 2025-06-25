@@ -7,9 +7,9 @@ import { Toaster } from "./components/shadcn/sonner.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Toaster />
     <QueryProvider>
       <RouteProvider />
+      <Toaster />
     </QueryProvider>
   </StrictMode>
 );
