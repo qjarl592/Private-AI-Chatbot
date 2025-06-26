@@ -1,15 +1,21 @@
 import { NavLink, useParams, type NavLinkProps } from "react-router-dom";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import { cn } from "@/lib/utils";
 import { Button } from "../shadcn/button";
 import { EllipsisVertical } from "lucide-react";
 import { useRef, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../shadcn/dropdown-menu";
 
 interface Props extends Omit<NavLinkProps, "children" | "to"> {
   chatId?: string;
   title: string;
   isSomeOpen: boolean;
   onOpen: () => void;
+  onClose: () => void;
 }
 
 export default function ChatLink({
@@ -18,12 +24,12 @@ export default function ChatLink({
   className,
   isSomeOpen,
   onOpen,
+  onClose,
   ...props
 }: Props) {
   const { chatId: curChatId } = useParams();
   const [isActive, setIsActive] = useState(false);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const showMenu = !!chatId && (chatId === curChatId || isActive);
 
@@ -36,12 +42,13 @@ export default function ChatLink({
   const onInactive = () => {
     if (!chatId) return;
     if (!isActive) return;
+
     setIsActive(false);
   };
 
   return (
     <div
-      ref={popoverRef}
+      ref={containerRef}
       className="relative border border-black"
       onFocus={onActive}
       onBlur={onInactive}
@@ -53,7 +60,6 @@ export default function ChatLink({
         className={cn(className, "block truncate pr-2")}
         to={chatId ? `/chat/${chatId}` : "/chat/new"}
         onClick={(e) => {
-          console.log("dfsdfs", isSomeOpen);
           if (isSomeOpen) {
             e.preventDefault();
           }
@@ -61,27 +67,24 @@ export default function ChatLink({
       >
         {title}
       </NavLink>
-      <Popover
-        open={isOpen}
-        onOpenChange={(open) => {
-          if (open) onOpen();
-          setIsOpen(open);
-        }}
-      >
-        <PopoverTrigger
-          className={cn("-translate-y-1/2 absolute top-1/2 right-0", {
-            "opacity-0": !showMenu && !isOpen,
-          })}
+      <DropdownMenu>
+        <DropdownMenuTrigger
           asChild
+          className={cn("-translate-y-1/2 absolute top-1/2 right-0", {
+            hidden: !showMenu,
+          })}
         >
-          <Button size="icon" variant="ghost" className="size-6 p-0">
+          <Button variant="ghost" size="icon">
             <EllipsisVertical />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent>
-          <div>con</div>
-        </PopoverContent>
-      </Popover>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>sf</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button variant="link" size="lg">
+        ss
+      </Button>
     </div>
   );
 }

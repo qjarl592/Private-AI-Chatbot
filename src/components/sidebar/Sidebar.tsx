@@ -15,8 +15,6 @@ export default function Sidebar() {
     retry: false,
   });
 
-  console.log("isO", isSomeOpen);
-
   return (
     <div className="fixed top-0 left-0 z-10 h-screen w-64 shadow-lg">
       Sidebar
