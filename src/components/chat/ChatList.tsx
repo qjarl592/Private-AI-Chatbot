@@ -13,15 +13,17 @@ export default function ChatList({ chatId }: Props) {
   const { done, chunkList } = useChatStreamStore();
 
   const { data } = useQuery({
-    queryKey: ["getChatHistory", chatId],
+    queryKey: ["getChatHistory", chatId, done],
     queryFn: () => getChatHistory(chatId),
-    enabled: !!idbInstance,
+    enabled: !!idbInstance && done,
   });
 
   const chatList = useMemo(() => {
     if (!data) return [];
     return data.map((item, idx) => ({ ...item, id: idx }));
   }, [data]);
+
+  console.log("chunks", chunkList, data);
 
   return (
     <div className="flex w-full flex-col gap-4">

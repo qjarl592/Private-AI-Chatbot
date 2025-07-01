@@ -16,6 +16,7 @@ import { useChatStreamStore } from "@/store/chatStreamStore";
 import { useChatIdb } from "@/hooks/useChatIdb";
 import { useNavigate } from "react-router-dom";
 import type { ChatHistoryItem } from "@/store/IdbStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   chatId?: string;
@@ -32,31 +33,10 @@ export default function InputBox({
 }: Props) {
   const [model, setModel] = useState<null | string>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { clearMsg, appendMsg, chunkList } = useChatStreamStore();
+  const { clearMsg, appendMsg } = useChatStreamStore();
   const { startNewChat, logChatHistory } = useChatIdb();
   const navigate = useNavigate();
-
-  const startChat = async (msg: string) => {
-    if (!model) return;
-
-    // 대화 로그 기록
-    const newId = await startNewChat();
-    const historyItem: ChatHistoryItem = {
-      model,
-      role: "user",
-      content: msg,
-    };
-
-    // const curMsg = {
-    //   role: "user",
-    //   content: msg,
-    // };
-    // const title = await recommendChatTitle({ model, messages: [curMsg] });
-    // console.log(title);
-
-    await logChatHistory(newId, historyItem);
-    return newId;
-  };
+  const queryClient = useQueryClient();
 
   const sendMsg = async (msg: string, chatId: string) => {
     if (!model) return;
@@ -81,6 +61,7 @@ export default function InputBox({
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
+    const locChunkList = [];
 
     while (true) {
       const { value } = await reader.read();
@@ -89,6 +70,7 @@ export default function InputBox({
       const chunkJson = JSON.parse(chunk);
       const { message, done } = chunkJson;
 
+      locChunkList.push(message.content);
       appendMsg(message.content);
       if (done) {
         break;
@@ -100,9 +82,11 @@ export default function InputBox({
     const historyAnsItem: ChatHistoryItem = {
       model,
       role: "assistant",
-      content: chunkList.join(""),
+      content: locChunkList.join(""),
     };
+    console.log(historyAnsItem, chatId);
     await logChatHistory(chatId, historyAnsItem);
+    queryClient.invalidateQueries({ queryKey: ["getChatHistory", chatId] });
     clearMsg();
   };
 
@@ -111,15 +95,13 @@ export default function InputBox({
     const msg = textareaRef.current.value.trim();
     if (msg.length === 0) return;
 
-    if (chatId) {
-      sendMsg(msg, chatId);
-      return;
-    }
+    const curChatId = chatId ?? (await startNewChat());
+    if (!curChatId) return;
 
-    const newId = await startChat(msg);
-    if (newId) {
-      navigate(`/chat/${newId}`, { state: msg });
+    if (!chatId) {
+      navigate(`/chat/${curChatId}`, { replace: true });
     }
+    sendMsg(msg, curChatId);
   };
 
   const onEnter = (e: KeyboardEvent) => {

@@ -12,9 +12,8 @@ export default function QueryProvider({ children }: Props) {
         defaultOptions: {
           queries: {
             // 기본 설정
-            staleTime: 60 * 1000, // 1분
             refetchOnWindowFocus: false,
-            retry: 3,
+            retry: false,
             refetchOnMount: false,
           },
         },
