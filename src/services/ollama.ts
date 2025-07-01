@@ -48,13 +48,16 @@ interface OllamaChatProps {
   messages: ChatItem[];
 }
 
-export function postChatStream(props: OllamaChatProps) {
+export function postChatStream(props: OllamaChatProps, timeout = 30000) {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), timeout);
   return fetch(`${baseURL}/api/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ ...props, stream: true }),
+    signal: controller.signal,
   });
 }
 
