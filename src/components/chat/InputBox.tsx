@@ -42,7 +42,6 @@ export default function InputBox({
     if (!model) return;
 
     // 대화 로그 기록
-    console.log("logging send");
     const historyItem: ChatHistoryItem = {
       model,
       role: "user",
@@ -52,13 +51,12 @@ export default function InputBox({
     queryClient.invalidateQueries({ queryKey: ["getChatHistory", chatId] });
 
     // ollama chat api call
-    console.log("chat streaming");
     const curMsg = {
       role: "user",
       content: msg,
     };
     setIsFetching(true);
-    const res = await postChatStream({ model, messages: [curMsg] });
+    const res = await postChatStream({ model, messages: [curMsg] }, 30000);
     if (!res.ok || res.body === null) return;
 
     const reader = res.body.getReader();
@@ -80,13 +78,11 @@ export default function InputBox({
     }
 
     // 대화 로그 기록
-    console.log("logging send");
     const historyAnsItem: ChatHistoryItem = {
       model,
       role: "assistant",
       content: locChunkList.join(""),
     };
-    console.log(historyAnsItem, chatId);
     await logChatHistory(chatId, historyAnsItem);
     queryClient.invalidateQueries({ queryKey: ["getChatHistory", chatId] });
     clearMsg();
