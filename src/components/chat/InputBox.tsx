@@ -33,7 +33,7 @@ export default function InputBox({
 }: Props) {
   const [model, setModel] = useState<null | string>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { clearMsg, appendMsg } = useChatStreamStore();
+  const { clearMsg, appendMsg, setIsFetching } = useChatStreamStore();
   const { startNewChat, logChatHistory } = useChatIdb();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -49,6 +49,7 @@ export default function InputBox({
       content: msg,
     };
     await logChatHistory(chatId, historyItem);
+    queryClient.invalidateQueries({ queryKey: ["getChatHistory", chatId] });
 
     // ollama chat api call
     console.log("chat streaming");
@@ -56,6 +57,7 @@ export default function InputBox({
       role: "user",
       content: msg,
     };
+    setIsFetching(true);
     const res = await postChatStream({ model, messages: [curMsg] });
     if (!res.ok || res.body === null) return;
 
