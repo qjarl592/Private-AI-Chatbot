@@ -12,12 +12,12 @@ import {
   type KeyboardEvent,
   type Ref,
 } from "react";
-import { postChatStream } from "@/services/ollama";
+import { postChatStream, type ChatItem } from "@/services/ollama";
 import { useChatStreamStore } from "@/store/chatStreamStore";
 import { useChatIdb } from "@/hooks/useChatIdb";
 import { useNavigate } from "react-router-dom";
-import type { ChatHistoryItem } from "@/store/IdbStore";
 import { useQueryClient } from "@tanstack/react-query";
+import type { ChatHistoryItem } from "@/services/idb";
 
 interface Props {
   chatId?: string;
@@ -52,7 +52,7 @@ export default function InputBox({
     queryClient.invalidateQueries({ queryKey: ["getChatHistory", chatId] });
 
     // ollama chat api call
-    const curMsg = {
+    const curMsg: ChatItem = {
       role: "user",
       content: msg,
     };

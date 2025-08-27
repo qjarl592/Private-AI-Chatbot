@@ -38,10 +38,11 @@ export async function getStatus() {
   return OllamaModelListSchema.parse(data);
 }
 
-export interface ChatItem {
-  role: string;
-  content: string;
-}
+export const ChatItemSchema = z.object({
+  role: z.enum(["assistant", "user"]),
+  content: z.string(),
+});
+export type ChatItem = z.infer<typeof ChatItemSchema>;
 
 interface OllamaChatProps {
   model: string;
