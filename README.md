@@ -19,29 +19,35 @@
 ## 🏗️ 기술 스택
 
 ### 프론트엔드
+
 - **React 18** (실험적 기능 포함)
 - **TypeScript** 타입 안전성
 - **Vite** 빠른 개발 및 빌드
 - **React Router v7** 내비게이션
 
 ### UI 및 스타일링
+
 - **Tailwind CSS** 스타일링
 - **shadcn/ui** 컴포넌트 라이브러리
 - **Radix UI** 프리미티브
 - **Lucide React** 아이콘
 
 ### 상태 관리
+
 - **Zustand** 전역 상태
 - **TanStack Query** 서버 상태 관리
 
 ### 데이터 저장
+
 - **IndexedDB** (idb 라이브러리) 로컬 데이터 지속성
 
 ### API 및 네트워킹
+
 - **Axios** HTTP 요청
 - **Fetch API** 스트리밍 응답
 
 ### 코드 품질
+
 - **Biome** 린팅 및 포맷팅
 - **Zod** 런타임 타입 검증
 
@@ -50,11 +56,11 @@
 이 애플리케이션을 실행하기 전에 Ollama를 로컬에 설치하고 실행해야 합니다:
 
 1. **Ollama 설치**: [ollama.ai](https://ollama.ai)에서 운영체제에 맞는 버전 다운로드
-2. **모델 다운로드**: 
+2. **모델 다운로드**:
    ```bash
    ollama pull llama2  # 또는 다른 모델
    ```
-3. **Ollama 서버 시작**: 
+3. **Ollama 서버 시작**:
    ```bash
    ollama serve
    ```
@@ -65,6 +71,7 @@
 ### 설치
 
 1. **저장소 클론**
+
    ```bash
    git clone <repository-url>
    cd private-ai-chat
@@ -79,6 +86,7 @@
 ### 개발
 
 1. **개발 서버 시작**
+
    ```bash
    pnpm dev
    ```
@@ -130,16 +138,19 @@ src/
 ## 🔧 핵심 아키텍처
 
 ### 데이터 저장
+
 - **Meta Store**: 채팅방 목록 및 메타데이터
 - **Chat Store**: 개별 채팅 대화 기록
 - 완전한 프라이버시를 위해 모든 데이터가 IndexedDB에 로컬 저장
 
 ### 상태 관리
+
 - `chatStreamStore`: 실시간 채팅 스트리밍 상태
 - `IdbStore`: IndexedDB 인스턴스 관리
 - `modelListStore`: 사용 가능한 AI 모델 목록
 
 ### API 통합
+
 - `http://localhost:11434`의 로컬 Ollama 서버에 연결
 - 일반 및 스트리밍 응답 모두 지원
 - 자동 모델 감지 및 목록화
@@ -147,6 +158,7 @@ src/
 ## 🎨 UI 컴포넌트
 
 현대적이고 접근 가능한 컴포넌트로 구축:
+
 - **채팅 인터페이스**: 스트리밍을 통한 실시간 메시지 표시
 - **모델 선택기**: AI 모델 선택을 위한 드롭다운
 - **사이드바 내비게이션**: 채팅 히스토리 및 내비게이션
@@ -175,34 +187,4 @@ src/
 3. **채팅 시작**: 새 채팅 버튼을 클릭하거나 메시지 입력
 4. **히스토리 관리**: 사이드바에서 이전 채팅 확인 및 관리
 
-## 🤝 기여하기
-
-1. 저장소 포크
-2. 기능 브랜치 생성 (`git checkout -b feature/amazing-feature`)
-3. 변경사항 커밋 (`git commit -m 'Add some amazing feature'`)
-4. 브랜치에 푸시 (`git push origin feature/amazing-feature`)
-5. Pull Request 열기
-
-## 📝 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 있습니다. LICENSE 파일에서 자세한 내용을 확인하세요.
-
-## 🙏 감사의 말
-
-- [Ollama](https://ollama.ai) - 로컬 AI 인프라 제공
-- [shadcn/ui](https://ui.shadcn.com/) - 아름다운 UI 컴포넌트
-- [Tailwind CSS](https://tailwindcss.com/) - 스타일링 시스템
-- [React](https://react.dev/) 및 [Vite](https://vitejs.dev/) - 개발 경험
-
-## 📞 지원
-
-문제가 발생하거나 질문이 있으시면:
-
-1. `http://localhost:11434`에서 Ollama가 실행 중인지 확인
-2. 최소 하나의 AI 모델이 다운로드되어 있는지 확인
-3. 브라우저 콘솔에서 오류 메시지 확인
-4. GitHub에서 자세한 정보와 함께 이슈 등록
-
 ---
-
-**프라이버시를 중시하는 AI 애호가들을 위해 ❤️로 제작되었습니다**
