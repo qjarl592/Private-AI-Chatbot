@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  unstable_ViewTransition as ViewTransition,
+} from "react";
 import ChatList from "./ChatList";
 import InputBox from "./InputBox";
 import { Button } from "../shadcn/button";
@@ -52,12 +58,14 @@ export default function ChatContainer({ chatId }: Props) {
         >
           <ChevronDown className="bg-transparent" />
         </Button>
-        <InputBox
-          chatId={chatId}
-          ref={inputBoxRef}
-          align="bottom"
-          onUpdateHeight={updateInputBoxHeight}
-        />
+        <ViewTransition name="input-box" update="position-change">
+          <InputBox
+            chatId={chatId}
+            ref={inputBoxRef}
+            align="bottom"
+            onUpdateHeight={updateInputBoxHeight}
+          />
+        </ViewTransition>
         <div
           className="fixed bottom-0 w-full bg-gray-50"
           style={{ height: `${32 + inputBoxHeight + 1}px` }}

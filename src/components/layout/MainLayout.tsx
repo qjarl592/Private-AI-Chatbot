@@ -1,6 +1,6 @@
 import { getStatus } from "@/services/ollama";
 import { useQuery } from "@tanstack/react-query";
-import { Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../sidebar/Sidebar";
 import { useModelListStore } from "@/store/modelListStore";
@@ -42,11 +42,7 @@ export default function MainLayout() {
   if (data) {
     return (
       <>
-        {idbInstance && (
-          <Suspense>
-            <Sidebar />
-          </Suspense>
-        )}
+        {idbInstance && <Sidebar />}
         <main className="w-screen">
           <Outlet />
         </main>

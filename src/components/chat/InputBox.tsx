@@ -5,6 +5,7 @@ import { Button } from "../shadcn/button";
 import { CornerDownLeft } from "lucide-react";
 import ModelSelect from "./ModelSelect";
 import {
+  startTransition,
   useCallback,
   useRef,
   useState,
@@ -67,6 +68,7 @@ export default function InputBox({
       const { value } = await reader.read();
 
       const chunk = decoder.decode(value, { stream: true });
+      console.log(chunk);
       const chunkJson = JSON.parse(chunk);
       const { message, done } = chunkJson;
 
@@ -97,7 +99,9 @@ export default function InputBox({
     if (!curChatId) return;
 
     if (!chatId) {
-      navigate(`/chat/${curChatId}`, { replace: true });
+      startTransition(() => {
+        navigate(`/chat/${curChatId}`, { replace: true });
+      });
     }
     sendMsg(msg, curChatId);
   };

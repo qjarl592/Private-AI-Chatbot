@@ -16,8 +16,10 @@ export function useChatIdb() {
     useIdbStore();
 
   useEffect(() => {
-    initIdb();
-  }, [initIdb]);
+    if (!idbInstance) {
+      initIdb();
+    }
+  }, [idbInstance, initIdb]);
 
   const checkIsInit = useCallback(() => {
     return !!idbInstance;
