@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import ChatLink from "./ChatLink";
 import { useChatIdb } from "@/hooks/useChatIdb";
-import { IDB_ERRORS } from "@/store/IdbStore";
+import { IDB_ERRORS } from "@/services/idb";
 
 export default function ChatLinkList() {
   const { getAllChatId } = useChatIdb();
