@@ -1,6 +1,10 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/shadcn/alert";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle, CopyCheck } from "lucide-react";
-import { Link } from "react-router-dom";
+
+export const Route = createFileRoute("/guide")({
+  component: Guide,
+});
 
 const commands = [
   {
@@ -31,9 +35,9 @@ const commands = [
   },
 ];
 
-export default function Guide() {
+function Guide() {
   return (
-    <main className="container mx-auto px-4 py-10">
+    <div className="container mx-auto px-4 py-10">
       <div className="mx-auto max-w-3xl">
         <h1 className="text-2xl">Ollama 설정 가이드</h1>
         <Alert variant="destructive">
@@ -103,6 +107,6 @@ export default function Guide() {
           </section>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

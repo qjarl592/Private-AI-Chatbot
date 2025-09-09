@@ -1,4 +1,3 @@
-import { NavLink, useParams, type NavLinkProps } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "../shadcn/button";
 import { EllipsisVertical } from "lucide-react";
@@ -9,10 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../shadcn/dropdown-menu";
+import { Link, useParams, type LinkProps } from "@tanstack/react-router";
 
-interface Props extends Omit<NavLinkProps, "children" | "to"> {
+interface Props extends Omit<LinkProps, "children" | "to"> {
   chatId?: string;
   title: string;
+  className: string;
 }
 
 export default function ChatLink({
@@ -22,7 +23,7 @@ export default function ChatLink({
   ...props
 }: Props) {
   const [open, setOpen] = useState(false);
-  const { chatId: curChatId } = useParams();
+  const { chatId: curChatId } = useParams({ strict: false });
   const [isActive, setIsActive] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -54,13 +55,13 @@ export default function ChatLink({
       onMouseEnter={onActive}
       onMouseLeave={onInactive}
     >
-      <NavLink
+      <Link
         {...props}
         className={cn(className, "block truncate pr-2")}
-        to={chatId ? `/chat/${chatId}` : "/chat/new"}
+        to={"/chat"}
       >
         {title}
-      </NavLink>
+      </Link>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger
           asChild

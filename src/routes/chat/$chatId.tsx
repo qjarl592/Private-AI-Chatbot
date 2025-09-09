@@ -1,11 +1,15 @@
 import ChatContainer from "@/components/chat/ChatContainer";
 import { useChatIdb } from "@/hooks/useChatIdb";
 import { useQuery } from "@tanstack/react-query";
-import { Navigate, useParams } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
-export default function Chat() {
+export const Route = createFileRoute("/chat/$chatId")({
+  component: Chat,
+});
+
+function Chat() {
   const { getAllChatId } = useChatIdb();
-  const { chatId } = useParams({ strict: false });
+  const { chatId } = Route.useParams();
 
   const { data: isValidId, error } = useQuery({
     queryKey: ["getAllChatId"],

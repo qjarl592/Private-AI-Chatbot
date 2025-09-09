@@ -15,9 +15,9 @@ import {
 import { postChatStream, type ChatItem } from "@/services/ollama";
 import { useChatStreamStore } from "@/store/chatStreamStore";
 import { useChatIdb } from "@/hooks/useChatIdb";
-import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ChatHistoryItem } from "@/services/idb";
+import { useNavigate } from "@tanstack/react-router";
 
 interface Props {
   chatId?: string;
@@ -100,7 +100,7 @@ export default function InputBox({
 
     if (!chatId) {
       startTransition(() => {
-        navigate(`/chat/${curChatId}`, { replace: true });
+        navigate({ to: "/chat" });
       });
     }
     sendMsg(msg, curChatId);
