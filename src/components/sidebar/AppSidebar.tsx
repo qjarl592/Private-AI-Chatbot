@@ -13,6 +13,7 @@ import {
 } from "../shadcn/sidebar";
 import { Link } from "@tanstack/react-router";
 import ChatLinkList from "./ChatLinkList";
+import OllamaSetting from "./OllamaSetting";
 
 export function AppSidebar() {
   return (
@@ -44,7 +45,9 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>setting</SidebarFooter>
+      <SidebarFooter>
+        <OllamaSetting />
+      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -8,6 +8,16 @@ const ollamaApiInstance = axios.create({
   responseType: "json",
 });
 
+// baseURL 변경 함수
+export function setOllamaBaseURL(newBaseURL: string) {
+  ollamaApiInstance.defaults.baseURL = newBaseURL;
+}
+
+// 현재 baseURL 조회 함수
+export function getOllamaBaseURL() {
+  return ollamaApiInstance.defaults.baseURL;
+}
+
 const OllamaModelDetailSchema = z.object({
   parent_model: z.string(),
   format: z.string(),
