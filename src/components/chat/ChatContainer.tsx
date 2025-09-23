@@ -37,7 +37,7 @@ export default function ChatContainer({ chatId }: Props) {
   }, [updateInputBoxHeight]);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-gray-50 pl-64">
+    <div className="min-h-screen overflow-x-hidden bg-gray-50">
       <div
         className="w-full px-24 pt-8"
         style={{ paddingBottom: `${32 + inputBoxHeight + 32}px` }}

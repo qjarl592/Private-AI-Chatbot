@@ -7,13 +7,14 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": []
+    "ignore": ["**/components/shadcn/**"]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineEnding": "lf"
+    "lineEnding": "lf",
+    "ignore": ["**/components/shadcn/**"]
   },
   "organizeImports": {
     "enabled": true
@@ -46,7 +47,8 @@
       "nursery": {
         "useSortedClasses": "error"
       }
-    }
+    },
+    "ignore": ["**/components/shadcn/**"]
   },
   "javascript": {
     "formatter": {
