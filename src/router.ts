@@ -5,11 +5,11 @@ import { QueryClient } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
 
 // Context 타입 정의
-interface RouterContext {
+export interface AppRouterContext {
   queryClient: QueryClient | undefined;
 }
 
-const defaultContext: RouterContext = {
+const defaultContext: AppRouterContext = {
   queryClient: undefined,
 };
 

@@ -1,5 +1,5 @@
 import MainLayout from "@/components/layout/MainLayout";
-import type { RouterContext } from "@/router";
+import type { AppRouterContext } from "@/router";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
@@ -12,6 +12,6 @@ const RootLayout = () => (
   </>
 );
 
-export const Route = createRootRouteWithContext<RouterContext>()({
+export const Route = createRootRouteWithContext<AppRouterContext>()({
   component: RootLayout,
 });
