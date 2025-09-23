@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getStatus } from "@/services/ollama";
 import { useModelListStore } from "@/store/modelListStore";
 import { SidebarProvider, SidebarTrigger } from "@/components/shadcn/sidebar";
+import { ThemeToggle } from "../sidebar/ThemeToggle";
 
 interface Props {
   children: ReactNode;
@@ -31,8 +32,11 @@ export default function MainLayout({ children }: Props) {
   return (
     <SidebarProvider>
       {!isGuide && idbInstance && <AppSidebar />}
-      <main className="w-screen">
-        {!isGuide && idbInstance && <SidebarTrigger />}
+      <main className="relative w-screen">
+        <div className="absolute flex w-full items-center justify-between">
+          {!isGuide && idbInstance && <SidebarTrigger />}
+          <ThemeToggle />
+        </div>
         {children}
       </main>
     </SidebarProvider>

@@ -44,7 +44,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>theme</SidebarFooter>
+      <SidebarFooter>setting</SidebarFooter>
     </Sidebar>
   );
 }

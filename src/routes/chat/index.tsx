@@ -30,7 +30,7 @@ function NewChat() {
     };
   }, []);
   return (
-    <div className="h-screen w-full bg-gray-50">
+    <div className="h-screen w-full bg-muted">
       <div className="flex h-screen w-full items-center justify-center px-24 pt-8">
         <p className="mb-30 font-bold text-4xl">Hello.</p>
         <InputBox align="center" />
