@@ -5,21 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/chat/$chatId")({
-  // loader: async ({ context }) => {
-  //   if (!context.queryClient) return;
-  //   try {
-  //     return await context.queryClient.fetchQuery({
-  //       queryKey: ["getAllChatId"],
-  //       queryFn: async () => {
-  //         const allInfo = await getAllChatId();
-  //         return !!allInfo.find((chatInfo) => chatInfo.id === chatId);
-  //       },
-  //     });
-  //   } catch (err) {
-  //     console.log(err);
-  //     throw redirect({ to: "/guide" });
-  //   }
-  // },
   component: Chat,
 });
 
@@ -38,6 +23,7 @@ function Chat() {
     gcTime: Number.POSITIVE_INFINITY,
     enabled: !!idbInstance,
   });
+
   if (isValidId) {
     return <ChatContainer chatId={chatId} />;
   }

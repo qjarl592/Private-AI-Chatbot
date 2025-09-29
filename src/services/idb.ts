@@ -2,7 +2,7 @@ import { openDB, type IDBPDatabase } from "idb";
 import z from "zod";
 import { ChatItemSchema } from "./ollama";
 
-const ChatInfoItemSchema = z.object({
+export const ChatInfoItemSchema = z.object({
   id: z.string(),
   title: z.string(),
 });

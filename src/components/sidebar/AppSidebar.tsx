@@ -25,7 +25,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild className="h-9">
                   <Link to="/chat">
                     <MessageCirclePlus />
                     <span>new chat</span>

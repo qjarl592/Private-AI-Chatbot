@@ -1,5 +1,5 @@
 import { Button } from "../shadcn/button";
-import { EllipsisVertical } from "lucide-react";
+import { Check, EllipsisVertical, X } from "lucide-react";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -7,40 +7,100 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../shadcn/dropdown-menu";
-import { Link, type LinkProps } from "@tanstack/react-router";
+import { Link, useNavigate, type LinkProps } from "@tanstack/react-router";
 import { SidebarMenuButton, SidebarMenuItem } from "../shadcn/sidebar";
+import { Input } from "../shadcn/input";
+import { useChatIdb } from "@/hooks/useChatIdb";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props extends Omit<LinkProps, "children" | "to"> {
   chatId?: string;
   title: string;
 }
 
-export default function ChatLink({ chatId, title, ...props }: Props) {
+export default function ChatLink({
+  chatId,
+  title: propsTitle,
+  ...props
+}: Props) {
+  const { renameChat, deleteChat } = useChatIdb();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [edit, setEdit] = useState(false);
+  const [title, setTitle] = useState(propsTitle);
+
+  const onSave = async () => {
+    if (!chatId) return;
+    setEdit(false);
+    await renameChat(chatId, title);
+    queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
+  };
+
+  const onDelete = async () => {
+    if (!chatId) return;
+    await deleteChat(chatId);
+    setEdit(false);
+    navigate({ to: "/chat" });
+    queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
+  };
 
   return (
     <SidebarMenuItem className="relative">
-      <SidebarMenuButton asChild>
-        <Link {...props} to="/chat/$chatId" params={{ chatId }}>
-          {title}
-        </Link>
-      </SidebarMenuButton>
+      {!edit ? (
+        <>
+          <SidebarMenuButton asChild className="h-9">
+            <Link {...props} to="/chat/$chatId" params={{ chatId }}>
+              {title}
+            </Link>
+          </SidebarMenuButton>
 
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
+          <DropdownMenu open={open} onOpenChange={setOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="-translate-y-1/2 absolute top-1/2 right-2 h-6 w-6"
+              >
+                <EllipsisVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setEdit(true)}>
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onDelete}>Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      ) : (
+        <div className="relative w-full">
+          <Input
+            className="w-full pr-16"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
           <Button
-            variant="ghost"
+            className="-translate-y-1/2 -translate-x-8 absolute top-1/2 right-0 size-8 p-0"
             size="icon"
-            className="-translate-y-1/2 absolute top-1/2 right-2 h-6 w-6"
+            variant="ghost"
+            onClick={onSave}
           >
-            <EllipsisVertical className="h-4 w-4" />
+            <Check />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <Button
+            className="-translate-y-1/2 absolute top-1/2 right-0 size-8 p-0"
+            size="icon"
+            variant="ghost"
+            onClick={() => {
+              setEdit(false);
+              setTitle(propsTitle);
+            }}
+          >
+            <X />
+          </Button>
+        </div>
+      )}
     </SidebarMenuItem>
   );
 }

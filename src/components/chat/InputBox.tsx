@@ -67,7 +67,6 @@ export default function InputBox({
       const { value } = await reader.read();
 
       const chunk = decoder.decode(value, { stream: true });
-      console.log(chunk);
       const chunkJson = JSON.parse(chunk);
       const { message, done } = chunkJson;
 

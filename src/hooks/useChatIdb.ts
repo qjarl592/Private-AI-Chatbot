@@ -2,6 +2,7 @@ import { genUniqueId } from "@/lib/utils";
 import {
   addItem,
   CHAT_STORE,
+  ChatInfoItemSchema,
   deleteItem,
   getItem,
   IDB_ERRORS,
@@ -9,10 +10,12 @@ import {
   updateItem,
   type ChatHistoryItem,
   type ChatInfoItem,
+  type IdbItem,
 } from "@/services/idb";
 import { useIdbStore } from "@/store/IdbStore";
 
 import { useEffect } from "react";
+import z from "zod";
 
 const CHAT_ID_LIST_KEY = "chat_id";
 
@@ -84,6 +87,17 @@ export function useChatIdb() {
     await deleteItem(idbInstance, CHAT_STORE, chatId);
   };
 
+  const renameChat = async (chatId: string, name: string) => {
+    const { value } = await getItem(idbInstance, META_STORE, CHAT_ID_LIST_KEY);
+    const curList = z.array(ChatInfoItemSchema).parse(value);
+    const newList = curList.map((item) => {
+      if (item.id === chatId) return { ...item, title: name };
+      return item;
+    });
+    const newItem: IdbItem = { key: CHAT_ID_LIST_KEY, value: newList };
+    await updateItem(idbInstance, META_STORE, newItem);
+  };
+
   return {
     idbInstance,
     getAllChatId,
@@ -91,5 +105,6 @@ export function useChatIdb() {
     startNewChat,
     logChatHistory,
     deleteChat,
+    renameChat,
   };
 }
