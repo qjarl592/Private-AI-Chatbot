@@ -1,5 +1,6 @@
 import ChatContainer from "@/components/chat/ChatContainer";
 import { useChatIdb } from "@/hooks/useChatIdb";
+import { useIdbStore } from "@/store/IdbStore";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/chat/$chatId")({
 function Chat() {
   const { getAllChatId } = useChatIdb();
   const { chatId } = Route.useParams();
+  const { idbInstance } = useIdbStore();
 
   const { data: isValidId, error } = useQuery({
     queryKey: ["getAllChatId"],
@@ -34,8 +36,8 @@ function Chat() {
     },
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
+    enabled: !!idbInstance,
   });
-
   if (isValidId) {
     return <ChatContainer chatId={chatId} />;
   }
