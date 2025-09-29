@@ -5,7 +5,6 @@ import { Button } from "../shadcn/button";
 import { CornerDownLeft } from "lucide-react";
 import ModelSelect from "./ModelSelect";
 import {
-  startTransition,
   useCallback,
   useRef,
   useState,
@@ -98,12 +97,10 @@ export default function InputBox({
     const curChatId = chatId ?? (await startNewChat());
     if (!curChatId) return;
 
-    if (!chatId) {
-      startTransition(() => {
-        navigate({ to: "/chat" });
-      });
-    }
     sendMsg(msg, curChatId);
+    if (!chatId) {
+      navigate({ to: "/chat/$chatId", params: { chatId: curChatId } });
+    }
   };
 
   const onEnter = (e: KeyboardEvent) => {

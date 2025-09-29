@@ -1,4 +1,4 @@
-import InputBox from "@/components/chat/InputBox";
+import ChatContainer from "@/components/chat/ChatContainer";
 import { getStatus } from "@/services/ollama";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -29,12 +29,5 @@ function NewChat() {
       document.body.style.overflow = "unset";
     };
   }, []);
-  return (
-    <div className="h-screen w-full bg-muted">
-      <div className="flex h-screen w-full items-center justify-center px-24 pt-8">
-        <p className="mb-30 font-bold text-4xl">Hello.</p>
-        <InputBox align="center" />
-      </div>
-    </div>
-  );
+  return <ChatContainer />;
 }
