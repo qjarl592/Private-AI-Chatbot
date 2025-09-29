@@ -95,6 +95,7 @@ export default function InputBox({
 
     const curChatId = chatId ?? (await startNewChat());
     if (!curChatId) return;
+    queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
 
     sendMsg(msg, curChatId);
     if (!chatId) {
