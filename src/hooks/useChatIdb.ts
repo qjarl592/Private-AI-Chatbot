@@ -44,7 +44,10 @@ export function useChatIdb() {
       const chatInfoList = await getAllChatId();
       const chatIdList = chatInfoList.map((info) => info.id);
       const newId = genUniqueId(chatIdList);
-      const newItem: ChatInfoItem = { id: newId, title: "(untitled)" };
+      const newItem: ChatInfoItem = {
+        id: newId,
+        title: new Date().toISOString(),
+      };
       await updateItem(idbInstance, META_STORE, {
         key: CHAT_ID_LIST_KEY,
         value: [...chatInfoList, newItem],
@@ -55,7 +58,10 @@ export function useChatIdb() {
       if (!(e instanceof Error)) throw e;
       if (e.message !== IDB_ERRORS.ITEM_NOT_FOUND) throw e;
       const newId = genUniqueId([]);
-      const newItem: ChatInfoItem = { id: newId, title: "(untitled)" };
+      const newItem: ChatInfoItem = {
+        id: newId,
+        title: new Date().toISOString(),
+      };
       await addItem(idbInstance, META_STORE, {
         key: CHAT_ID_LIST_KEY,
         value: [newItem],

@@ -1,4 +1,3 @@
-import { removeQuotes } from "@/lib/utils";
 import axios from "axios";
 import { z } from "zod";
 
@@ -78,20 +77,4 @@ export async function postChat(props: OllamaChatProps) {
     stream: false,
   });
   return data;
-}
-
-export async function recommendChatTitle(props: OllamaChatProps) {
-  const recommendPrompt: ChatItem = {
-    role: "user",
-    content: `This is new chat start message of llm chat service. 
-    Recommend chat tilte for this conversation. 
-    The title should not over 30 words.
-    The title should be one sentance.
-    Tht title can represent the context of conversation. 
-    Just answer only one title string so that I can use it as a tile directly`,
-  };
-  props.messages.push(recommendPrompt);
-  const res = await postChat(props);
-  const title = res.message.content;
-  return removeQuotes(title.trim());
 }

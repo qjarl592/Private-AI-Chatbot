@@ -49,7 +49,10 @@ export default function ChatLink({
     <SidebarMenuItem className="relative">
       {!edit ? (
         <>
-          <SidebarMenuButton asChild className="h-9">
+          <SidebarMenuButton
+            asChild
+            className="block h-9 overflow-hidden overflow-ellipsis whitespace-nowrap pr-8"
+          >
             <Link {...props} to="/chat/$chatId" params={{ chatId }}>
               {title}
             </Link>
