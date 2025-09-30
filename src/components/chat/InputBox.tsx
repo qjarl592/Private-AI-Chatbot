@@ -34,12 +34,14 @@ export default function InputBox({
   const [model, setModel] = useState<null | string>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { clearMsg, appendMsg, setIsFetching } = useChatStreamStore();
-  const { startNewChat, logChatHistory } = useChatIdb();
+  const { startNewChat, logChatHistory, getChatHistory } = useChatIdb();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const sendMsg = async (msg: string, chatId: string) => {
     if (!model) return;
+
+    const chatHistory = await getChatHistory(chatId);
 
     // 대화 로그 기록
     const historyItem: ChatHistoryItem = {
@@ -56,7 +58,11 @@ export default function InputBox({
       content: msg,
     };
     setIsFetching(true);
-    const res = await postChatStream({ model, messages: [curMsg] }, 30000);
+    const msgList = [
+      ...chatHistory.map(({ role, content }) => ({ role, content })),
+      curMsg,
+    ];
+    const res = await postChatStream({ model, messages: msgList }, 30000);
     if (!res.ok || res.body === null) return;
 
     const reader = res.body.getReader();
