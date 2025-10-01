@@ -13,3 +13,11 @@ export function genUniqueId(idList: string[]) {
   } while (idList.includes(id));
   return id;
 }
+
+export async function copyToClipboard(
+  text: string,
+  onCopy: () => void = () => {}
+) {
+  await navigator.clipboard.writeText(text);
+  onCopy();
+}

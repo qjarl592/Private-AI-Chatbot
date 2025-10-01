@@ -1,7 +1,9 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/shadcn/alert";
 import { Button, buttonVariants } from "@/components/shadcn/button";
+import { copyToClipboard } from "@/lib/utils";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle, CopyCheck } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/guide")({
   component: Guide,
@@ -37,6 +39,13 @@ const commands = [
 ];
 
 function Guide() {
+  const onClickCopy = (command: string) => {
+    const onCopySuccess = () => {
+      toast.success("클립보드에 복사됬습니다.");
+    };
+    copyToClipboard(command, onCopySuccess);
+  };
+
   return (
     <div className="container mx-auto px-4 py-10">
       <div className="mx-auto mt-8 max-w-3xl">
@@ -81,7 +90,7 @@ function Guide() {
                   <div className="relative mb-2 flex items-center justify-between rounded-md bg-secondary p-3">
                     <code className="text-sm">{cmd.command}</code>
                     <Button
-                      // onClick={() => copyToClipboard(cmd.command, index)}
+                      onClick={() => onClickCopy(cmd.command)}
                       size="icon"
                       className="absolute top-2 right-2 size-6 rounded-sm p-1"
                     >

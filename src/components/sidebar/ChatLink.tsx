@@ -36,7 +36,7 @@ export default function ChatLink({
 }: Props) {
   const { renameChat, deleteChat } = useChatIdb();
   const navigate = useNavigate();
-  const { chatId: pathChatId } = useParams({ from: "/chat/$chatId" });
+  const { chatId: pathChatId } = useParams({ strict: false });
   const { requestConfirm } = useConfirm();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
