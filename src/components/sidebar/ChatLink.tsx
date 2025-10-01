@@ -12,6 +12,7 @@ import { SidebarMenuButton, SidebarMenuItem } from "../shadcn/sidebar";
 import { Input } from "../shadcn/input";
 import { useChatIdb } from "@/hooks/useChatIdb";
 import { useQueryClient } from "@tanstack/react-query";
+import { useConfirm } from "@/store/confirmStore";
 
 interface Props extends Omit<LinkProps, "children" | "to"> {
   chatId?: string;
@@ -25,6 +26,7 @@ export default function ChatLink({
 }: Props) {
   const { renameChat, deleteChat } = useChatIdb();
   const navigate = useNavigate();
+  const { requestConfirm } = useConfirm();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -39,10 +41,19 @@ export default function ChatLink({
 
   const onDelete = async () => {
     if (!chatId) return;
-    await deleteChat(chatId);
-    setEdit(false);
-    navigate({ to: "/chat" });
-    queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
+    requestConfirm({
+      title: "대화를 삭제하시겠습니까?",
+      description: "대화를 삭제하면 해당 대화의 모든 기록이 삭제됩니다.",
+      actionText: "삭제",
+      cancelText: "취소",
+      onConfirm: async () => {
+        await deleteChat(chatId);
+        setEdit(false);
+        navigate({ to: "/chat" });
+        queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
+      },
+    });
+    setOpen(false);
   };
 
   return (
