@@ -1,4 +1,4 @@
-import { MessageCirclePlus } from "lucide-react";
+import { Info, MessageCirclePlus } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +18,9 @@ import OllamaSetting from "./OllamaSetting";
 export function AppSidebar() {
   return (
     <Sidebar>
-      <SidebarHeader>Ollama AI Chat</SidebarHeader>
+      <SidebarHeader className="p-4">
+        <h1 className="font-bold text-xl">Ollama AI Chat</h1>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
@@ -29,6 +31,12 @@ export function AppSidebar() {
                   <Link to="/chat">
                     <MessageCirclePlus />
                     <span>new chat</span>
+                  </Link>
+                </SidebarMenuButton>
+                <SidebarMenuButton asChild className="h-9">
+                  <Link to="/guide">
+                    <Info />
+                    <span>Guide</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -45,7 +53,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="p-4">
         <OllamaSetting />
       </SidebarFooter>
     </Sidebar>

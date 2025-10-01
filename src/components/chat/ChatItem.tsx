@@ -12,7 +12,7 @@ export default function ChatItem({ side, children }: Props) {
   return (
     <div
       className={cn(
-        "w-fit max-w-[80%] whitespace-pre-wrap break-words rounded-2xl bg-primary-foreground p-2",
+        "w-fit max-w-[80%] whitespace-pre-wrap break-words rounded-2xl bg-primary-foreground px-4 py-2 shadow-lg",
         { "self-end": side === "right", "w-[80%] self-start": side === "left" }
       )}
     >

@@ -1,4 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/shadcn/alert";
+import { Button, buttonVariants } from "@/components/shadcn/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle, CopyCheck } from "lucide-react";
 
@@ -38,8 +39,8 @@ const commands = [
 function Guide() {
   return (
     <div className="container mx-auto px-4 py-10">
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-2xl">Ollama 설정 가이드</h1>
+      <div className="mx-auto mt-8 max-w-3xl">
+        <h1 className="mb-3 font-bold text-2xl">Ollama 설정 가이드</h1>
         <Alert variant="destructive">
           <AlertCircle />
           <AlertTitle>Unable to process your payment.</AlertTitle>
@@ -48,7 +49,7 @@ function Guide() {
             설치하고 서버를 실행해주세요.
           </AlertDescription>
         </Alert>
-        <div className="space-y-6">
+        <div className="mt-4 space-y-6">
           <section>
             <h2 className="mb-3 font-semibold text-xl">Ollama란?</h2>
             <p className="mb-2">
@@ -74,34 +75,34 @@ function Guide() {
               {commands.map((cmd) => (
                 <div
                   key={`cmd-${cmd.id}`}
-                  className="rounded-lg border bg-white p-4 shadow-sm"
+                  className="rounded-lg border bg-primary-foreground p-4 shadow-sm"
                 >
                   <h3 className="mb-2 font-medium">{cmd.title}</h3>
-                  <div className="mb-2 flex items-center justify-between rounded-md bg-gray-100 p-3">
+                  <div className="relative mb-2 flex items-center justify-between rounded-md bg-secondary p-3">
                     <code className="text-sm">{cmd.command}</code>
-                    <button
+                    <Button
                       // onClick={() => copyToClipboard(cmd.command, index)}
-                      className="ml-2 rounded border border-blue-500 px-3 py-1 text-blue-500 text-sm transition-colors duration-200 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      size="icon"
+                      className="absolute top-2 right-2 size-6 rounded-sm p-1"
                     >
-                      <CopyCheck />
-                    </button>
+                      <CopyCheck className="size-4" />
+                    </Button>
                   </div>
-                  <p className="text-gray-600 text-sm">{cmd.description}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {cmd.description}
+                  </p>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="pt-4">
+          <section>
             <h2 className="mb-3 font-semibold text-xl">서버 상태 확인</h2>
             <p className="mb-4">
               Ollama 서버를 시작한 후, 아래 버튼을 클릭하여 챗봇 페이지로
               돌아갑니다.
             </p>
-            <Link
-              to="/"
-              className="inline-block rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
-            >
+            <Link to="/" className={buttonVariants({ variant: "default" })}>
               챗봇 페이지로 돌아가기
             </Link>
           </section>

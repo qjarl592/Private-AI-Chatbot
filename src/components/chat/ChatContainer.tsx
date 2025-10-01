@@ -11,7 +11,7 @@ export default function ChatContainer({ chatId }: Props) {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-muted">
-      <div className="w-full px-24 pt-8">
+      <div className="w-full px-24 pt-16">
         {chatId && <ChatList chatId={chatId} />}
         <ViewTransition name="input-box" update="position-change">
           <InputBox chatId={chatId} ref={inputBoxRef} align="bottom" />
