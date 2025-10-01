@@ -4,19 +4,14 @@ import { Textarea } from "../shadcn/textarea";
 import { Button } from "../shadcn/button";
 import { CornerDownLeft } from "lucide-react";
 import ModelSelect from "./ModelSelect";
-import {
-  useCallback,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type Ref,
-} from "react";
+import { useRef, type KeyboardEvent, type Ref } from "react";
 import { postChatStream, type ChatItem } from "@/services/ollama";
 import { useChatStreamStore } from "@/store/chatStreamStore";
 import { useChatIdb } from "@/hooks/useChatIdb";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ChatHistoryItem } from "@/services/idb";
 import { useNavigate } from "@tanstack/react-router";
+import { useModelListStore } from "@/store/modelListStore";
 
 interface Props {
   chatId?: string;
@@ -31,8 +26,8 @@ export default function InputBox({
   onUpdateHeight,
   ref,
 }: Props) {
-  const [model, setModel] = useState<null | string>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { model } = useModelListStore();
   const { clearMsg, appendMsg, setIsFetching } = useChatStreamStore();
   const { startNewChat, logChatHistory, getChatHistory } = useChatIdb();
   const navigate = useNavigate();
@@ -117,10 +112,6 @@ export default function InputBox({
     onClickSend();
   };
 
-  const onSelectModel = useCallback((value: string) => {
-    setModel(value);
-  }, []);
-
   return (
     <Card
       ref={ref}
@@ -137,7 +128,7 @@ export default function InputBox({
         onKeyDown={onEnter}
       />
       <div className="flex w-full justify-end">
-        <ModelSelect onSelect={onSelectModel} />
+        <ModelSelect />
         <Button size="icon" variant="secondary" onClick={onClickSend}>
           <CornerDownLeft />
         </Button>

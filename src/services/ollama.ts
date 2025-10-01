@@ -1,9 +1,9 @@
 import axios from "axios";
 import { z } from "zod";
 
-const baseURL = "http://localhost:11434";
+export const defaultUrl = "http://localhost:11434";
 const ollamaApiInstance = axios.create({
-  baseURL,
+  baseURL: defaultUrl,
   responseType: "json",
 });
 
@@ -61,7 +61,8 @@ interface OllamaChatProps {
 export function postChatStream(props: OllamaChatProps, timeout = 30000) {
   const controller = new AbortController();
   setTimeout(() => controller.abort(), timeout);
-  return fetch(`${baseURL}/api/chat`, {
+  const apiUrl = getOllamaBaseURL();
+  return fetch(`${apiUrl}/api/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

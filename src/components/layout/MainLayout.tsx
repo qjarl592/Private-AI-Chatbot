@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { AppSidebar } from "../sidebar/AppSidebar";
 import { useChatIdb } from "@/hooks/useChatIdb";
 import { useLocation } from "@tanstack/react-router";
@@ -15,17 +15,21 @@ interface Props {
 export default function MainLayout({ children }: Props) {
   const location = useLocation();
   const { idbInstance } = useChatIdb();
-  const setModelList = useModelListStore((state) => state.setModelList);
+  const { setModelList, model, setModel } = useModelListStore();
 
-  const { data } = useQuery({
+  useQuery({
     queryKey: ["getStatus"],
-    queryFn: getStatus,
+    queryFn: async () => {
+      const data = await getStatus();
+      if (data.models.length > 0) {
+        setModelList(data.models);
+        if (model === "") {
+          setModel(data.models[0].model);
+        }
+      }
+      return data;
+    },
   });
-
-  useEffect(() => {
-    if (!data) return;
-    setModelList(data.models);
-  }, [data, setModelList]);
 
   const isGuide = location.pathname === "/guide";
 
