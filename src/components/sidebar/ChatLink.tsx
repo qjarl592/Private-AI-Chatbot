@@ -7,34 +7,44 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../shadcn/dropdown-menu";
-import { Link, useNavigate, type LinkProps } from "@tanstack/react-router";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  type LinkProps,
+} from "@tanstack/react-router";
 import { SidebarMenuButton, SidebarMenuItem } from "../shadcn/sidebar";
 import { Input } from "../shadcn/input";
 import { useChatIdb } from "@/hooks/useChatIdb";
 import { useQueryClient } from "@tanstack/react-query";
 import { useConfirm } from "@/store/confirmStore";
+import { cn } from "@/lib/utils";
 
 interface Props extends Omit<LinkProps, "children" | "to"> {
-  chatId?: string;
+  chatId: string;
   title: string;
+  isEditing: boolean;
+  onChangeEdit: (value: string | null) => void;
 }
 
 export default function ChatLink({
   chatId,
   title: propsTitle,
+  isEditing,
+  onChangeEdit,
   ...props
 }: Props) {
   const { renameChat, deleteChat } = useChatIdb();
   const navigate = useNavigate();
+  const { chatId: pathChatId } = useParams({ from: "/chat/$chatId" });
   const { requestConfirm } = useConfirm();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [edit, setEdit] = useState(false);
   const [title, setTitle] = useState(propsTitle);
 
   const onSave = async () => {
     if (!chatId) return;
-    setEdit(false);
+    onChangeEdit(null);
     await renameChat(chatId, title);
     queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
   };
@@ -48,7 +58,7 @@ export default function ChatLink({
       cancelText: "취소",
       onConfirm: async () => {
         await deleteChat(chatId);
-        setEdit(false);
+        onChangeEdit(null);
         navigate({ to: "/chat" });
         queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
       },
@@ -58,11 +68,17 @@ export default function ChatLink({
 
   return (
     <SidebarMenuItem className="relative">
-      {!edit ? (
+      {!isEditing ? (
         <>
           <SidebarMenuButton
             asChild
-            className="block h-9 overflow-hidden overflow-ellipsis whitespace-nowrap pr-8"
+            className={cn(
+              "block h-9 overflow-hidden overflow-ellipsis whitespace-nowrap pr-8",
+              {
+                "bg-sidebar-accent text-sidebar-accent-foreground":
+                  pathChatId === chatId,
+              }
+            )}
           >
             <Link {...props} to="/chat/$chatId" params={{ chatId }}>
               {title}
@@ -80,7 +96,7 @@ export default function ChatLink({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setEdit(true)}>
+              <DropdownMenuItem onClick={() => onChangeEdit(chatId)}>
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onDelete}>Delete</DropdownMenuItem>
@@ -90,6 +106,10 @@ export default function ChatLink({
       ) : (
         <div className="relative w-full">
           <Input
+            ref={(el) => {
+              el?.focus();
+              el?.select();
+            }}
             className="w-full pr-16"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -107,7 +127,7 @@ export default function ChatLink({
             size="icon"
             variant="ghost"
             onClick={() => {
-              setEdit(false);
+              onChangeEdit(null);
               setTitle(propsTitle);
             }}
           >
