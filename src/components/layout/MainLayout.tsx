@@ -39,9 +39,12 @@ export default function MainLayout({ children }: Props) {
       {!isGuide && idbInstance && <AppSidebar />}
       <main className="w-screen bg-muted">
         <div
-          className={cn("sticky top-0 flex items-center justify-between", {
-            "bg-transparent": isGuide,
-          })}
+          className={cn(
+            "sticky top-0 flex items-center justify-between bg-muted",
+            {
+              "bg-transparent": isGuide,
+            }
+          )}
         >
           {!isGuide && idbInstance && <SidebarTrigger />}
           <ThemeToggle />

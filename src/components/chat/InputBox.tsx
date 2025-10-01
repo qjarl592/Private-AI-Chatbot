@@ -37,7 +37,7 @@ export default function InputBox({
 
   const sendMsg = async (msg: string, chatId: string) => {
     if (!model) return;
-
+    // 이전 대화 기록
     const chatHistory = await getChatHistory(chatId);
 
     // 대화 로그 기록
@@ -60,27 +60,52 @@ export default function InputBox({
       curMsg,
     ];
     const res = await postChatStream({ model, messages: msgList }, 30000);
-    console.log("res", res);
     if (!res.ok || res.body === null) return;
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     const locChunkList = [];
+    let buffer = "";
 
-    while (true) {
-      const { value } = await reader.read();
+    if (!reader) return;
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
 
-      const chunk = decoder.decode(value, { stream: true });
-      const chunkJson = JSON.parse(chunk);
-      const { message, done } = chunkJson;
+        if (done) break;
 
-      console.log(message.content);
+        buffer += decoder.decode(value, { stream: true });
 
-      locChunkList.push(message.content);
-      appendMsg(message.content);
-      if (done) {
-        break;
+        // 줄바꿈으로 분리
+        const lines = buffer.split("\n");
+
+        // 마지막 줄은 불완전할 수 있으므로 버퍼에 보관
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+
+          try {
+            const data = JSON.parse(trimmedLine);
+
+            if (data.message?.content) {
+              locChunkList.push(data.message.content);
+              appendMsg(data.message.content);
+            }
+
+            if (data.done) {
+              return;
+            }
+          } catch (_e) {
+            console.warn("파싱 실패한 라인:", trimmedLine);
+            // 작은따옴표가 문제라면 여기서 처리 가능
+            // const fixed = trimmedLine.replace(/'/g, "\\'");
+          }
+        }
       }
+    } finally {
+      reader.releaseLock();
     }
 
     // 대화 로그 기록
@@ -98,6 +123,7 @@ export default function InputBox({
     if (!textareaRef.current) return;
     const msg = textareaRef.current.value.trim();
     if (msg.length === 0) return;
+    textareaRef.current.value = "";
 
     const curChatId = chatId ?? (await startNewChat());
     if (!curChatId) return;
@@ -106,6 +132,13 @@ export default function InputBox({
     sendMsg(msg, curChatId);
     if (!chatId) {
       navigate({ to: "/chat/$chatId", params: { chatId: curChatId } });
+    } else {
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 300);
     }
   };
 
