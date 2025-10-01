@@ -1,4 +1,7 @@
-import { Info, MessageCirclePlus } from "lucide-react";
+import { useSidebarStore } from '@/store/sidebarStore'
+import { Link } from '@tanstack/react-router'
+import { Info, MessageCirclePlus } from 'lucide-react'
+import { useEffect } from 'react'
 import {
   Sidebar,
   SidebarContent,
@@ -11,20 +14,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "../shadcn/sidebar";
-import { Link } from "@tanstack/react-router";
-import ChatLinkList from "./ChatLinkList";
-import OllamaSetting from "./OllamaSetting";
-import { useEffect } from "react";
-import { useSidebarStore } from "@/store/sidebarStore";
+} from '../shadcn/sidebar'
+import ChatLinkList from './ChatLinkList'
+import OllamaSetting from './OllamaSetting'
 
 export function AppSidebar() {
-  const { open } = useSidebar();
-  const { setOpen } = useSidebarStore();
+  const { open } = useSidebar()
+  const { setOpen } = useSidebarStore()
 
   useEffect(() => {
-    setOpen(open);
-  }, [open, setOpen]);
+    setOpen(open)
+  }, [open, setOpen])
 
   return (
     <Sidebar>
@@ -67,5 +67,5 @@ export function AppSidebar() {
         <OllamaSetting />
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-import { useRef } from "react";
-import ChatList from "./ChatList";
-import InputBox from "./InputBox";
+import { useRef } from 'react'
+import ChatList from './ChatList'
+import InputBox from './InputBox'
 
 interface Props {
-  chatId?: string;
+  chatId?: string
 }
 
 export default function ChatContainer({ chatId }: Props) {
-  const inputBoxRef = useRef<HTMLDivElement>(null);
+  const inputBoxRef = useRef<HTMLDivElement>(null)
 
   return (
     <div className="mx-auto min-h-screen max-w-5xl overflow-x-hidden bg-muted">
@@ -17,5 +17,5 @@ export default function ChatContainer({ chatId }: Props) {
         <div className="fixed bottom-0 left-0 h-36 w-full bg-muted" />
       </div>
     </div>
-  );
+  )
 }

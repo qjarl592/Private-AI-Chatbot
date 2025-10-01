@@ -1,30 +1,30 @@
-import { Button } from "../shadcn/button";
-import { Check, EllipsisVertical, X } from "lucide-react";
-import { useState } from "react";
+import { useChatIdb } from '@/hooks/useChatIdb'
+import { cn } from '@/lib/utils'
+import { useConfirm } from '@/store/confirmStore'
+import { useQueryClient } from '@tanstack/react-query'
+import {
+  Link,
+  type LinkProps,
+  useNavigate,
+  useParams,
+} from '@tanstack/react-router'
+import { Check, EllipsisVertical, X } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '../shadcn/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../shadcn/dropdown-menu";
-import {
-  Link,
-  useNavigate,
-  useParams,
-  type LinkProps,
-} from "@tanstack/react-router";
-import { SidebarMenuButton, SidebarMenuItem } from "../shadcn/sidebar";
-import { Input } from "../shadcn/input";
-import { useChatIdb } from "@/hooks/useChatIdb";
-import { useQueryClient } from "@tanstack/react-query";
-import { useConfirm } from "@/store/confirmStore";
-import { cn } from "@/lib/utils";
+} from '../shadcn/dropdown-menu'
+import { Input } from '../shadcn/input'
+import { SidebarMenuButton, SidebarMenuItem } from '../shadcn/sidebar'
 
-interface Props extends Omit<LinkProps, "children" | "to"> {
-  chatId: string;
-  title: string;
-  isEditing: boolean;
-  onChangeEdit: (value: string | null) => void;
+interface Props extends Omit<LinkProps, 'children' | 'to'> {
+  chatId: string
+  title: string
+  isEditing: boolean
+  onChangeEdit: (value: string | null) => void
 }
 
 export default function ChatLink({
@@ -34,37 +34,37 @@ export default function ChatLink({
   onChangeEdit,
   ...props
 }: Props) {
-  const { renameChat, deleteChat } = useChatIdb();
-  const navigate = useNavigate();
-  const { chatId: pathChatId } = useParams({ strict: false });
-  const { requestConfirm } = useConfirm();
-  const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState(propsTitle);
+  const { renameChat, deleteChat } = useChatIdb()
+  const navigate = useNavigate()
+  const { chatId: pathChatId } = useParams({ strict: false })
+  const { requestConfirm } = useConfirm()
+  const queryClient = useQueryClient()
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState(propsTitle)
 
   const onSave = async () => {
-    if (!chatId) return;
-    onChangeEdit(null);
-    await renameChat(chatId, title);
-    queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
-  };
+    if (!chatId) return
+    onChangeEdit(null)
+    await renameChat(chatId, title)
+    queryClient.invalidateQueries({ queryKey: ['getAllChatId'] })
+  }
 
   const onDelete = async () => {
-    if (!chatId) return;
+    if (!chatId) return
     requestConfirm({
-      title: "대화를 삭제하시겠습니까?",
-      description: "대화를 삭제하면 해당 대화의 모든 기록이 삭제됩니다.",
-      actionText: "삭제",
-      cancelText: "취소",
+      title: '대화를 삭제하시겠습니까?',
+      description: '대화를 삭제하면 해당 대화의 모든 기록이 삭제됩니다.',
+      actionText: '삭제',
+      cancelText: '취소',
       onConfirm: async () => {
-        await deleteChat(chatId);
-        onChangeEdit(null);
-        navigate({ to: "/chat" });
-        queryClient.invalidateQueries({ queryKey: ["getAllChatId"] });
+        await deleteChat(chatId)
+        onChangeEdit(null)
+        navigate({ to: '/chat' })
+        queryClient.invalidateQueries({ queryKey: ['getAllChatId'] })
       },
-    });
-    setOpen(false);
-  };
+    })
+    setOpen(false)
+  }
 
   return (
     <SidebarMenuItem className="relative">
@@ -73,9 +73,9 @@ export default function ChatLink({
           <SidebarMenuButton
             asChild
             className={cn(
-              "block h-9 overflow-hidden overflow-ellipsis whitespace-nowrap pr-8",
+              'block h-9 overflow-hidden overflow-ellipsis whitespace-nowrap pr-8',
               {
-                "bg-sidebar-accent text-sidebar-accent-foreground":
+                'bg-sidebar-accent text-sidebar-accent-foreground':
                   pathChatId === chatId,
               }
             )}
@@ -106,13 +106,13 @@ export default function ChatLink({
       ) : (
         <div className="relative w-full">
           <Input
-            ref={(el) => {
-              el?.focus();
-              el?.select();
+            ref={el => {
+              el?.focus()
+              el?.select()
             }}
             className="w-full pr-16"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={e => setTitle(e.target.value)}
           />
           <Button
             className="-translate-y-1/2 -translate-x-8 absolute top-1/2 right-0 size-8 p-0"
@@ -127,8 +127,8 @@ export default function ChatLink({
             size="icon"
             variant="ghost"
             onClick={() => {
-              onChangeEdit(null);
-              setTitle(propsTitle);
+              onChangeEdit(null)
+              setTitle(propsTitle)
             }}
           >
             <X />
@@ -136,5 +136,5 @@ export default function ChatLink({
         </div>
       )}
     </SidebarMenuItem>
-  );
+  )
 }

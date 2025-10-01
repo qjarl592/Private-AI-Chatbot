@@ -1,50 +1,50 @@
-import { Alert, AlertDescription, AlertTitle } from "@/components/shadcn/alert";
-import { Button, buttonVariants } from "@/components/shadcn/button";
-import { copyToClipboard } from "@/lib/utils";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertCircle, CopyCheck } from "lucide-react";
-import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/alert'
+import { Button, buttonVariants } from '@/components/shadcn/button'
+import { copyToClipboard } from '@/lib/utils'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { AlertCircle, CopyCheck } from 'lucide-react'
+import { toast } from 'sonner'
 
-export const Route = createFileRoute("/guide")({
+export const Route = createFileRoute('/guide')({
   component: Guide,
-});
+})
 
 const commands = [
   {
-    id: "install-mac",
-    title: "Ollama 설치 (Mac)",
-    command: "brew install ollama",
-    description: "Mac에서 Homebrew를 사용하여 Ollama를 설치합니다.",
+    id: 'install-mac',
+    title: 'Ollama 설치 (Mac)',
+    command: 'brew install ollama',
+    description: 'Mac에서 Homebrew를 사용하여 Ollama를 설치합니다.',
   },
   {
-    id: "install-linux",
-    title: "Ollama 설치 (Linux)",
-    command: "curl -fsSL https://ollama.com/install.sh | sh",
-    description: "Linux에서 Ollama를 설치합니다.",
+    id: 'install-linux',
+    title: 'Ollama 설치 (Linux)',
+    command: 'curl -fsSL https://ollama.com/install.sh | sh',
+    description: 'Linux에서 Ollama를 설치합니다.',
   },
   {
-    id: "serve",
-    title: "Ollama 서버 시작",
-    command: "ollama serve",
+    id: 'serve',
+    title: 'Ollama 서버 시작',
+    command: 'ollama serve',
     description:
-      "Ollama 서버를 시작합니다. 이 명령은 백그라운드에서 서버를 실행합니다.",
+      'Ollama 서버를 시작합니다. 이 명령은 백그라운드에서 서버를 실행합니다.',
   },
   {
-    id: "pull",
-    title: "모델 다운로드 (예: Llama2)",
-    command: "ollama pull llama2",
+    id: 'pull',
+    title: '모델 다운로드 (예: Llama2)',
+    command: 'ollama pull llama2',
     description:
-      "Llama2 모델을 다운로드합니다. 다른 모델로 변경할 수 있습니다.",
+      'Llama2 모델을 다운로드합니다. 다른 모델로 변경할 수 있습니다.',
   },
-];
+]
 
 function Guide() {
   const onClickCopy = (command: string) => {
     const onCopySuccess = () => {
-      toast.success("클립보드에 복사됬습니다.");
-    };
-    copyToClipboard(command, onCopySuccess);
-  };
+      toast.success('클립보드에 복사됬습니다.')
+    }
+    copyToClipboard(command, onCopySuccess)
+  }
 
   return (
     <div className="container mx-auto px-4 py-10">
@@ -81,7 +81,7 @@ function Guide() {
           <section>
             <h2 className="mb-3 font-semibold text-xl">명령어 목록</h2>
             <div className="space-y-4">
-              {commands.map((cmd) => (
+              {commands.map(cmd => (
                 <div
                   key={`cmd-${cmd.id}`}
                   className="rounded-lg border bg-primary-foreground p-4 shadow-sm"
@@ -111,12 +111,12 @@ function Guide() {
               Ollama 서버를 시작한 후, 아래 버튼을 클릭하여 챗봇 페이지로
               돌아갑니다.
             </p>
-            <Link to="/" className={buttonVariants({ variant: "default" })}>
+            <Link to="/" className={buttonVariants({ variant: 'default' })}>
               챗봇 페이지로 돌아가기
             </Link>
           </section>
         </div>
       </div>
     </div>
-  );
+  )
 }

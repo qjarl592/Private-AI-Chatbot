@@ -1,17 +1,17 @@
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from 'lucide-react'
 
-import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
-import { useTheme, type Theme } from "../provider/ThemeProvider";
+import { ToggleGroup, ToggleGroupItem } from '@/components/shadcn/toggle-group'
+import { type Theme, useTheme } from '../provider/ThemeProvider'
 
 export function ThemeToggle() {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, theme } = useTheme()
   return (
     <ToggleGroup
       type="single"
       value={theme}
-      onValueChange={(value) => {
-        if (value === "") return;
-        setTheme(value as Theme);
+      onValueChange={value => {
+        if (value === '') return
+        setTheme(value as Theme)
       }}
     >
       <ToggleGroupItem value="system" aria-label="Toggle theme system">
@@ -24,5 +24,5 @@ export function ThemeToggle() {
         <Moon className="h-4 w-4" />
       </ToggleGroupItem>
     </ToggleGroup>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import InputBox from "@/components/chat/InputBox";
+import InputBox from '@/components/chat/InputBox'
 
 export default function NewChat() {
   return (
@@ -8,5 +8,5 @@ export default function NewChat() {
         <InputBox align="center" />
       </div>
     </div>
-  );
+  )
 }

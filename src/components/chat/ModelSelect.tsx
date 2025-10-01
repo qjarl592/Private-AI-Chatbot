@@ -1,4 +1,4 @@
-import { useModelListStore } from "@/store/modelListStore";
+import { useModelListStore } from '@/store/modelListStore'
 import {
   Select,
   SelectContent,
@@ -6,21 +6,21 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../shadcn/select";
+} from '../shadcn/select'
 
 export default function ModelSelect() {
-  const { modelList, model, setModel } = useModelListStore();
+  const { modelList, model, setModel } = useModelListStore()
 
-  if (modelList.length === 0) return;
+  if (modelList.length === 0) return
 
   return (
-    <Select value={model} onValueChange={(value) => setModel(value)}>
+    <Select value={model} onValueChange={value => setModel(value)}>
       <SelectTrigger>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          {modelList.map((model) => (
+          {modelList.map(model => (
             <SelectItem value={model.model} key={model.model}>
               {model.name}
             </SelectItem>
@@ -28,5 +28,5 @@ export default function ModelSelect() {
         </SelectGroup>
       </SelectContent>
     </Select>
-  );
+  )
 }

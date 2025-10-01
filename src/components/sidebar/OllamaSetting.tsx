@@ -1,44 +1,44 @@
-import { Info, RefreshCcw, Settings } from "lucide-react";
-import { Button } from "../shadcn/button";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import {
   defaultUrl,
   getOllamaBaseURL,
   getStatus,
   setOllamaBaseURL,
-} from "@/services/ollama";
-import { Input } from "../shadcn/input";
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useModelListStore } from "@/store/modelListStore";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+} from '@/services/ollama'
+import { useModelListStore } from '@/store/modelListStore'
+import { useQueryClient } from '@tanstack/react-query'
+import { Info, RefreshCcw, Settings } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '../shadcn/button'
+import { Input } from '../shadcn/input'
+import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../shadcn/tooltip'
 
 export default function OllamaSetting() {
-  const [open, setOpen] = useState(false);
-  const curOllamaUrl = getOllamaBaseURL() ?? "";
-  const [urlValue, setUrlValue] = useState(curOllamaUrl);
-  const queryClient = useQueryClient();
-  const [isErr, setIsErr] = useState(false);
-  const { setModelList, setModel } = useModelListStore();
+  const [open, setOpen] = useState(false)
+  const curOllamaUrl = getOllamaBaseURL() ?? ''
+  const [urlValue, setUrlValue] = useState(curOllamaUrl)
+  const queryClient = useQueryClient()
+  const [isErr, setIsErr] = useState(false)
+  const { setModelList, setModel } = useModelListStore()
 
   const connectOllama = async (url: string) => {
-    setOllamaBaseURL(url);
-    const prevStatus = queryClient.getQueryData(["todos"]);
+    setOllamaBaseURL(url)
+    const prevStatus = queryClient.getQueryData(['todos'])
     try {
-      await queryClient.cancelQueries({ queryKey: ["getStatus"] });
-      const newStatus = await getStatus();
-      queryClient.setQueryData(["getStatus"], () => newStatus);
-      setModelList(newStatus.models);
+      await queryClient.cancelQueries({ queryKey: ['getStatus'] })
+      const newStatus = await getStatus()
+      queryClient.setQueryData(['getStatus'], () => newStatus)
+      setModelList(newStatus.models)
       if (newStatus.models.length > 0) {
-        setModel(newStatus.models[0].model);
+        setModel(newStatus.models[0].model)
       }
-      setOpen(false);
+      setOpen(false)
     } catch (e) {
-      console.log(e);
-      queryClient.setQueryData(["getStatus"], () => prevStatus);
-      setIsErr(true);
+      console.log(e)
+      queryClient.setQueryData(['getStatus'], () => prevStatus)
+      setIsErr(true)
     }
-  };
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -79,9 +79,9 @@ export default function OllamaSetting() {
           <Input
             value={urlValue}
             placeholder="Input Ollama URL to connect."
-            onChange={(e) => {
-              setUrlValue(e.target.value);
-              setIsErr(false);
+            onChange={e => {
+              setUrlValue(e.target.value)
+              setIsErr(false)
             }}
             className="mt-2"
             aria-invalid={isErr} // boolean 값
@@ -98,5 +98,5 @@ export default function OllamaSetting() {
         </div>
       </PopoverContent>
     </Popover>
-  );
+  )
 }

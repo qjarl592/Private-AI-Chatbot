@@ -1,9 +1,9 @@
-import { type ReactNode } from "react";
+import { type ReactNode } from 'react'
 
 interface Props<T extends string | number> {
-  value: T;
-  caseBy: Partial<Record<T, ReactNode | null>>;
-  defaultCase?: ReactNode | null;
+  value: T
+  caseBy: Partial<Record<T, ReactNode | null>>
+  defaultCase?: ReactNode | null
 }
 
 export default function SwitchCase<T extends string | number>({
@@ -11,6 +11,6 @@ export default function SwitchCase<T extends string | number>({
   caseBy,
   defaultCase = null,
 }: Props<T>) {
-  if (value) return caseBy[value] ?? defaultCase;
-  return defaultCase;
+  if (value) return caseBy[value] ?? defaultCase
+  return defaultCase
 }

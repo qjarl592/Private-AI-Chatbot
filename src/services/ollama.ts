@@ -1,20 +1,20 @@
-import axios from "axios";
-import { z } from "zod";
+import axios from 'axios'
+import { z } from 'zod'
 
-export const defaultUrl = "http://localhost:11434";
+export const defaultUrl = 'http://localhost:11434'
 const ollamaApiInstance = axios.create({
   baseURL: defaultUrl,
-  responseType: "json",
-});
+  responseType: 'json',
+})
 
 // baseURL 변경 함수
 export function setOllamaBaseURL(newBaseURL: string) {
-  ollamaApiInstance.defaults.baseURL = newBaseURL;
+  ollamaApiInstance.defaults.baseURL = newBaseURL
 }
 
 // 현재 baseURL 조회 함수
 export function getOllamaBaseURL() {
-  return ollamaApiInstance.defaults.baseURL;
+  return ollamaApiInstance.defaults.baseURL
 }
 
 const OllamaModelDetailSchema = z.object({
@@ -24,8 +24,8 @@ const OllamaModelDetailSchema = z.object({
   families: z.array(z.string()),
   parameter_size: z.string(),
   quantization_level: z.string(),
-});
-export type OllamaModelDetail = z.infer<typeof OllamaModelDetailSchema>;
+})
+export type OllamaModelDetail = z.infer<typeof OllamaModelDetailSchema>
 
 const OllamaModelSchema = z.object({
   name: z.string(),
@@ -34,48 +34,48 @@ const OllamaModelSchema = z.object({
   size: z.number(),
   digest: z.string(),
   details: OllamaModelDetailSchema,
-});
-export type OllamaModel = z.infer<typeof OllamaModelSchema>;
+})
+export type OllamaModel = z.infer<typeof OllamaModelSchema>
 
 const OllamaModelListSchema = z.object({
   models: z.array(OllamaModelSchema),
-});
-export type OllamaModelList = z.infer<typeof OllamaModelListSchema>;
+})
+export type OllamaModelList = z.infer<typeof OllamaModelListSchema>
 
 export async function getStatus() {
-  const { data } = await ollamaApiInstance.get("/api/tags");
-  return OllamaModelListSchema.parse(data);
+  const { data } = await ollamaApiInstance.get('/api/tags')
+  return OllamaModelListSchema.parse(data)
 }
 
 export const ChatItemSchema = z.object({
-  role: z.enum(["assistant", "user"]),
+  role: z.enum(['assistant', 'user']),
   content: z.string(),
-});
-export type ChatItem = z.infer<typeof ChatItemSchema>;
+})
+export type ChatItem = z.infer<typeof ChatItemSchema>
 
 interface OllamaChatProps {
-  model: string;
-  messages: ChatItem[];
+  model: string
+  messages: ChatItem[]
 }
 
 export function postChatStream(props: OllamaChatProps, timeout = 30000) {
-  const controller = new AbortController();
-  setTimeout(() => controller.abort(), timeout);
-  const apiUrl = getOllamaBaseURL();
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), timeout)
+  const apiUrl = getOllamaBaseURL()
   return fetch(`${apiUrl}/api/chat`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ ...props, stream: true }),
     signal: controller.signal,
-  });
+  })
 }
 
 export async function postChat(props: OllamaChatProps) {
-  const { data } = await ollamaApiInstance.post("/api/chat", {
+  const { data } = await ollamaApiInstance.post('/api/chat', {
     ...props,
     stream: false,
-  });
-  return data;
+  })
+  return data
 }

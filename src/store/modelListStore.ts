@@ -1,38 +1,38 @@
-import type { OllamaModel } from "@/services/ollama";
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import type { OllamaModel } from '@/services/ollama'
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 
 interface ModelListStoreState {
-  modelList: OllamaModel[];
-  model: string;
+  modelList: OllamaModel[]
+  model: string
 }
 
 interface ModelListStoreAction {
-  setModelList: (newModelList: OllamaModel[]) => void;
-  setModel: (model: string) => void;
-  resetModelList: () => void;
+  setModelList: (newModelList: OllamaModel[]) => void
+  setModel: (model: string) => void
+  resetModelList: () => void
 }
 
-type ModelListStore = ModelListStoreState & ModelListStoreAction;
+type ModelListStore = ModelListStoreState & ModelListStoreAction
 
 const modelListInitialState: ModelListStoreState = {
-  model: "",
+  model: '',
   modelList: [],
-};
+}
 
 export const useModelListStore = create<ModelListStore>()(
   persist(
-    (set) => ({
+    set => ({
       ...modelListInitialState,
       setModelList: (newModelList: OllamaModel[]) =>
         set({ modelList: newModelList }),
-      setModel: (model) => set({ model }),
+      setModel: model => set({ model }),
       resetModelList: () => set({ ...modelListInitialState }),
     }),
     {
-      name: "ollama-model-store",
+      name: 'ollama-model-store',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ model: state.model }),
+      partialize: state => ({ model: state.model }),
     }
   )
-);
+)

@@ -9,30 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ChatChatIdRouteImport } from './routes/chat/$chatId'
+import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ChatIndexRouteImport } from './routes/chat/index'
-import { Route as ChatChatIdRouteImport } from './routes/chat/$chatId'
 
 const GuideRoute = GuideRouteImport.update({
   id: '/guide',
   path: '/guide',
   getParentRoute: () => rootRouteImport,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 } as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 } as any)
 const ChatIndexRoute = ChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
   getParentRoute: () => rootRouteImport,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 } as any)
 const ChatChatIdRoute = ChatChatIdRouteImport.update({
   id: '/chat/$chatId',
   path: '/chat/$chatId',
   getParentRoute: () => rootRouteImport,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 } as any)
 
 export interface FileRoutesByFullPath {

@@ -1,16 +1,16 @@
-import { create } from "zustand";
+import { create } from 'zustand'
 
 interface SidebarStoreState {
-  open: boolean;
+  open: boolean
 }
 
 interface SidebarStoreAction {
-  setOpen: (open: boolean) => void;
+  setOpen: (open: boolean) => void
 }
 
 export const useSidebarStore = create<SidebarStoreState & SidebarStoreAction>()(
-  (set) => ({
+  set => ({
     open: true,
-    setOpen: (open) => set({ open }),
+    setOpen: open => set({ open }),
   })
-);
+)

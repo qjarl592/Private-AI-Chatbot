@@ -1,23 +1,23 @@
-import { type ClassValue, clsx } from "clsx";
-import { nanoid } from "nanoid";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx'
+import { nanoid } from 'nanoid'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 export function genUniqueId(idList: string[]) {
-  let id: string;
+  let id: string
   do {
-    id = nanoid();
-  } while (idList.includes(id));
-  return id;
+    id = nanoid()
+  } while (idList.includes(id))
+  return id
 }
 
 export async function copyToClipboard(
   text: string,
   onCopy: () => void = () => {}
 ) {
-  await navigator.clipboard.writeText(text);
-  onCopy();
+  await navigator.clipboard.writeText(text)
+  onCopy()
 }

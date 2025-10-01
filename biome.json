@@ -28,7 +28,7 @@
       },
       "suspicious": {
         "noArrayIndexKey": "error",
-        "noExplicitAny": "warn"
+        "noExplicitAny": "error"
       },
       "correctness": {
         "noUnusedVariables": "error",
@@ -45,7 +45,14 @@
         "noForEach": "off"
       },
       "nursery": {
-        "useSortedClasses": "error"
+        "useSortedClasses": {
+          "level": "error",
+          "fix": "safe",
+          "options": {
+            "attributes": ["classList"],
+            "functions": ["clsx", "cva", "cn"]
+          }
+        }
       }
     },
     "ignore": ["**/components/shadcn/**"]

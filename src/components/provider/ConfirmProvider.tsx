@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useConfirmProvider } from '@/store/confirmStore'
+import type { ReactNode } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,30 +9,29 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../shadcn/alert-dialog";
-import { useConfirmProvider } from "@/store/confirmStore";
+} from '../shadcn/alert-dialog'
 
 interface Props {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export default function ConfirmProvider({ children }: Props) {
   const { resolver, isOpen, title, description, actionText, cancelText } =
-    useConfirmProvider();
+    useConfirmProvider()
 
   const onAction = () => {
-    resolver(true);
-  };
+    resolver(true)
+  }
 
   const onCancel = () => {
-    resolver(false);
-  };
+    resolver(false)
+  }
 
   const onOpenChange = (open: boolean) => {
     if (!open && resolver) {
-      resolver(false);
+      resolver(false)
     }
-  };
+  }
 
   return (
     <>
@@ -57,5 +57,5 @@ export default function ConfirmProvider({ children }: Props) {
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
+  )
 }

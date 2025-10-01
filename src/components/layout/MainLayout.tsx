@@ -1,38 +1,38 @@
-import { type ReactNode } from "react";
-import { AppSidebar } from "../sidebar/AppSidebar";
-import { useChatIdb } from "@/hooks/useChatIdb";
-import { useLocation } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { getStatus } from "@/services/ollama";
-import { useModelListStore } from "@/store/modelListStore";
-import { SidebarProvider, SidebarTrigger } from "@/components/shadcn/sidebar";
-import { ThemeToggle } from "../sidebar/ThemeToggle";
-import { cn } from "@/lib/utils";
+import { SidebarProvider, SidebarTrigger } from '@/components/shadcn/sidebar'
+import { useChatIdb } from '@/hooks/useChatIdb'
+import { cn } from '@/lib/utils'
+import { getStatus } from '@/services/ollama'
+import { useModelListStore } from '@/store/modelListStore'
+import { useQuery } from '@tanstack/react-query'
+import { useLocation } from '@tanstack/react-router'
+import { type ReactNode } from 'react'
+import { AppSidebar } from '../sidebar/AppSidebar'
+import { ThemeToggle } from '../sidebar/ThemeToggle'
 
 interface Props {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export default function MainLayout({ children }: Props) {
-  const location = useLocation();
-  const { idbInstance } = useChatIdb();
-  const { setModelList, model, setModel } = useModelListStore();
+  const location = useLocation()
+  const { idbInstance } = useChatIdb()
+  const { setModelList, model, setModel } = useModelListStore()
 
   useQuery({
-    queryKey: ["getStatus"],
+    queryKey: ['getStatus'],
     queryFn: async () => {
-      const data = await getStatus();
+      const data = await getStatus()
       if (data.models.length > 0) {
-        setModelList(data.models);
-        if (model === "") {
-          setModel(data.models[0].model);
+        setModelList(data.models)
+        if (model === '') {
+          setModel(data.models[0].model)
         }
       }
-      return data;
+      return data
     },
-  });
+  })
 
-  const isGuide = location.pathname === "/guide";
+  const isGuide = location.pathname === '/guide'
 
   return (
     <SidebarProvider>
@@ -40,9 +40,9 @@ export default function MainLayout({ children }: Props) {
       <main className="w-screen bg-muted">
         <div
           className={cn(
-            "sticky top-0 flex items-center justify-between bg-muted",
+            'sticky top-0 flex items-center justify-between bg-muted',
             {
-              "bg-transparent": isGuide,
+              'bg-transparent': isGuide,
             }
           )}
         >
@@ -52,5 +52,5 @@ export default function MainLayout({ children }: Props) {
         {children}
       </main>
     </SidebarProvider>
-  );
+  )
 }
