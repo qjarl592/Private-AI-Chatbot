@@ -25,7 +25,7 @@ export default function ChatList({ chatId }: Props) {
   }, [data]);
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4 pb-48">
       {chatList?.map((item) => (
         <ChatItem
           key={`chat-${chatId}-${item.id}`}

@@ -10,12 +10,22 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "../shadcn/sidebar";
 import { Link } from "@tanstack/react-router";
 import ChatLinkList from "./ChatLinkList";
 import OllamaSetting from "./OllamaSetting";
+import { useEffect } from "react";
+import { useSidebarStore } from "@/store/sidebarStore";
 
 export function AppSidebar() {
+  const { open } = useSidebar();
+  const { setOpen } = useSidebarStore();
+
+  useEffect(() => {
+    setOpen(open);
+  }, [open, setOpen]);
+
   return (
     <Sidebar>
       <SidebarHeader className="p-4">

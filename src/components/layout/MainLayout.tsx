@@ -7,6 +7,7 @@ import { getStatus } from "@/services/ollama";
 import { useModelListStore } from "@/store/modelListStore";
 import { SidebarProvider, SidebarTrigger } from "@/components/shadcn/sidebar";
 import { ThemeToggle } from "../sidebar/ThemeToggle";
+import { cn } from "@/lib/utils";
 
 interface Props {
   children: ReactNode;
@@ -36,8 +37,12 @@ export default function MainLayout({ children }: Props) {
   return (
     <SidebarProvider>
       {!isGuide && idbInstance && <AppSidebar />}
-      <main className="relative w-screen">
-        <div className="absolute flex w-full items-center justify-between">
+      <main className="w-screen bg-muted">
+        <div
+          className={cn("sticky top-0 flex items-center justify-between", {
+            "bg-transparent": isGuide,
+          })}
+        >
           {!isGuide && idbInstance && <SidebarTrigger />}
           <ThemeToggle />
         </div>

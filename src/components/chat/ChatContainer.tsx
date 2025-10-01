@@ -1,4 +1,4 @@
-import { useRef, unstable_ViewTransition as ViewTransition } from "react";
+import { useRef } from "react";
 import ChatList from "./ChatList";
 import InputBox from "./InputBox";
 
@@ -10,12 +10,11 @@ export default function ChatContainer({ chatId }: Props) {
   const inputBoxRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-muted">
+    <div className="mx-auto min-h-screen max-w-5xl overflow-x-hidden bg-muted">
       <div className="w-full px-24 pt-16">
         {chatId && <ChatList chatId={chatId} />}
-        <ViewTransition name="input-box" update="position-change">
-          <InputBox chatId={chatId} ref={inputBoxRef} align="bottom" />
-        </ViewTransition>
+        <InputBox chatId={chatId} ref={inputBoxRef} align="bottom" />
+        <div className="fixed bottom-0 left-0 h-36 w-full bg-muted" />
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ChatHistoryItem } from "@/services/idb";
 import { useNavigate } from "@tanstack/react-router";
 import { useModelListStore } from "@/store/modelListStore";
+import { useSidebarStore } from "@/store/sidebarStore";
 
 interface Props {
   chatId?: string;
@@ -32,6 +33,7 @@ export default function InputBox({
   const { startNewChat, logChatHistory, getChatHistory } = useChatIdb();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { open } = useSidebarStore();
 
   const sendMsg = async (msg: string, chatId: string) => {
     if (!model) return;
@@ -58,6 +60,7 @@ export default function InputBox({
       curMsg,
     ];
     const res = await postChatStream({ model, messages: msgList }, 30000);
+    console.log("res", res);
     if (!res.ok || res.body === null) return;
 
     const reader = res.body.getReader();
@@ -70,6 +73,8 @@ export default function InputBox({
       const chunk = decoder.decode(value, { stream: true });
       const chunkJson = JSON.parse(chunk);
       const { message, done } = chunkJson;
+
+      console.log(message.content);
 
       locChunkList.push(message.content);
       appendMsg(message.content);
@@ -115,10 +120,14 @@ export default function InputBox({
   return (
     <Card
       ref={ref}
-      className={cn("fixed z-10 flex w-[calc(100%-448px)] flex-col gap-0 p-0", {
-        "bottom-8": align === "bottom",
-        "bottom-1/2 translate-y-full": align === "center",
-      })}
+      className={cn(
+        "fixed z-10 flex w-[calc(100%-192px)] max-w-[calc(64rem-192px)] flex-col gap-0 p-0",
+        {
+          "bottom-8": align === "bottom",
+          "bottom-1/2 translate-y-full": align === "center",
+          "w-[calc(100%-192px-16rem)]": open,
+        }
+      )}
     >
       <Textarea
         ref={textareaRef}
