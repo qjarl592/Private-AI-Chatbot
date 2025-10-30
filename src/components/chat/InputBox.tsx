@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import type { ChatHistoryItem } from '@/services/idb'
 import { type ChatItem, postChatStream } from '@/services/ollama'
 import { useChatStreamStore } from '@/store/chatStreamStore'
+import { useImageUploadStore } from '@/store/imageUploadStore'
 import { useModelListStore } from '@/store/modelListStore'
 import { useSidebarStore } from '@/store/sidebarStore'
 import { useQueryClient } from '@tanstack/react-query'
@@ -12,6 +13,9 @@ import { type KeyboardEvent, type Ref, useRef } from 'react'
 import { Button } from '../shadcn/button'
 import { Card } from '../shadcn/card'
 import { Textarea } from '../shadcn/textarea'
+
+import { ImagePreviewList } from './ImagePreviewList'
+import { ImageUploadButton } from './ImageUploadButton'
 import ModelSelect from './ModelSelect'
 
 interface Props {
@@ -31,6 +35,7 @@ export default function InputBox({
   const { model } = useModelListStore()
   const { clearMsg, appendMsg, setIsFetching } = useChatStreamStore()
   const { startNewChat, logChatHistory, getChatHistory } = useChatIdb()
+  const { images, clearImages } = useImageUploadStore()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { open } = useSidebarStore()
@@ -122,7 +127,8 @@ export default function InputBox({
   const onClickSend = async () => {
     if (!textareaRef.current) return
     const msg = textareaRef.current.value.trim()
-    if (msg.length === 0) return
+    if (msg.length === 0 && images.length === 0) return
+
     textareaRef.current.value = ''
 
     const curChatId = chatId ?? (await startNewChat())
@@ -130,6 +136,12 @@ export default function InputBox({
     queryClient.invalidateQueries({ queryKey: ['getAllChatId'] })
 
     sendMsg(msg, curChatId)
+
+    // 이미지 전송 후 클리어 (추후 이미지 전송 로직 추가 시 활용)
+    if (images.length > 0) {
+      clearImages()
+    }
+
     if (!chatId) {
       navigate({ to: '/chat/$chatId', params: { chatId: curChatId } })
     } else {
@@ -162,18 +174,22 @@ export default function InputBox({
         }
       )}
     >
+      <ImagePreviewList />
       <Textarea
         ref={textareaRef}
         placeholder="Type your message here."
-        className="max-h-[40vh] resize-none"
+        className="max-h-[40vh] resize-none border-t-0"
         onChange={onUpdateHeight}
         onKeyDown={onEnter}
       />
-      <div className="flex w-full justify-end">
-        <ModelSelect />
-        <Button size="icon" variant="secondary" onClick={onClickSend}>
-          <CornerDownLeft />
-        </Button>
+      <div className="flex w-full items-center justify-between">
+        <ImageUploadButton />
+        <div className="flex">
+          <ModelSelect />
+          <Button size="icon" variant="ghost" onClick={onClickSend}>
+            <CornerDownLeft />
+          </Button>
+        </div>
       </div>
     </Card>
   )
