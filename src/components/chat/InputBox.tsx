@@ -42,86 +42,102 @@ export default function InputBox({
 
   const sendMsg = async (msg: string, chatId: string) => {
     if (!model) return
-    // 이전 대화 기록
-    const chatHistory = await getChatHistory(chatId)
 
-    // 대화 로그 기록
-    const historyItem: ChatHistoryItem = {
-      model,
-      role: 'user',
-      content: msg,
-    }
-    await logChatHistory(chatId, historyItem)
-    queryClient.invalidateQueries({ queryKey: ['getChatHistory', chatId] })
-
-    // ollama chat api call
-    const curMsg: ChatItem = {
-      role: 'user',
-      content: msg,
-    }
-    setIsFetching(true)
-    const msgList = [
-      ...chatHistory.map(({ role, content }) => ({ role, content })),
-      curMsg,
-    ]
-    const res = await postChatStream({ model, messages: msgList }, 30000)
-    if (!res.ok || res.body === null) return
-
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    const locChunkList = []
-    let buffer = ''
-
-    if (!reader) return
     try {
-      while (true) {
-        const { value, done } = await reader.read()
+      // ✅ 1. 시작 시 스토어 초기화
+      clearMsg()
+      setIsFetching(true)
 
-        if (done) break
+      // 이전 대화 기록
+      const chatHistory = await getChatHistory(chatId)
 
-        buffer += decoder.decode(value, { stream: true })
+      // 대화 로그 기록
+      const historyItem: ChatHistoryItem = {
+        model,
+        role: 'user',
+        content: msg,
+      }
+      await logChatHistory(chatId, historyItem)
+      queryClient.invalidateQueries({ queryKey: ['getChatHistory', chatId] })
 
-        // 줄바꿈으로 분리
-        const lines = buffer.split('\n')
+      // ollama chat api call
+      const curMsg: ChatItem = {
+        role: 'user',
+        content: msg,
+      }
 
-        // 마지막 줄은 불완전할 수 있으므로 버퍼에 보관
-        buffer = lines.pop() || ''
+      const msgList = [
+        ...chatHistory.map(({ role, content }) => ({ role, content })),
+        curMsg,
+      ]
+      const res = await postChatStream({ model, messages: msgList }, 30000)
 
-        for (const line of lines) {
-          const trimmedLine = line.trim()
-          if (!trimmedLine) continue
+      if (!res.ok || res.body === null) {
+        throw new Error('Stream response error')
+      }
 
-          try {
-            const data = JSON.parse(trimmedLine)
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      const locChunkList: string[] = []
+      let buffer = ''
 
-            if (data.message?.content) {
-              locChunkList.push(data.message.content)
-              appendMsg(data.message.content)
+      try {
+        while (true) {
+          const { value, done } = await reader.read()
+
+          // ✅ 2. done일 때 break 사용 (return 대신)
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+
+          // 줄바꿈으로 분리
+          const lines = buffer.split('\n')
+
+          // 마지막 줄은 불완전할 수 있으므로 버퍼에 보관
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            const trimmedLine = line.trim()
+            if (!trimmedLine) continue
+
+            try {
+              const data = JSON.parse(trimmedLine)
+
+              if (data.message?.content) {
+                locChunkList.push(data.message.content)
+                appendMsg(data.message.content)
+              }
+
+              // ✅ 3. data.done 체크는 로깅용으로만 사용 (선택사항)
+              if (data.done) {
+                console.log('Stream completed')
+              }
+            } catch (e) {
+              console.warn('파싱 실패한 라인:', trimmedLine, e)
             }
-
-            if (data.done) {
-              return
-            }
-          } catch (_e) {
-            console.warn('파싱 실패한 라인:', trimmedLine)
-            // 작은따옴표가 문제라면 여기서 처리 가능
-            // const fixed = trimmedLine.replace(/'/g, "\\'");
           }
         }
+      } finally {
+        // ✅ 4. reader는 항상 릴리즈
+        reader.releaseLock()
       }
-    } finally {
-      reader.releaseLock()
-    }
 
-    // 대화 로그 기록
-    const historyAnsItem: ChatHistoryItem = {
-      model,
-      role: 'assistant',
-      content: locChunkList.join(''),
+      // ✅ 5. 스트림 완료 후 DB 저장
+      const historyAnsItem: ChatHistoryItem = {
+        model,
+        role: 'assistant',
+        content: locChunkList.join(''),
+      }
+      await logChatHistory(chatId, historyAnsItem)
+      queryClient.invalidateQueries({ queryKey: ['getChatHistory', chatId] })
+    } catch (error) {
+      console.error('Send message error:', error)
+      // 에러 토스트 표시 등 추가 가능
+    } finally {
+      // ✅ 6. 항상 실행되는 cleanup
+      clearMsg()
+      setIsFetching(false)
     }
-    await logChatHistory(chatId, historyAnsItem)
-    queryClient.invalidateQueries({ queryKey: ['getChatHistory', chatId] })
-    clearMsg()
   }
 
   const onClickSend = async () => {
