@@ -22,7 +22,7 @@ export default function OllamaSetting() {
   const { setModelList, setModel } = useModelListStore()
 
   const connectOllama = async (url: string) => {
-    setOllamaBaseURL(url)
+    setOllamaBaseURL(url.trim())
     const prevStatus = queryClient.getQueryData(['todos'])
     try {
       await queryClient.cancelQueries({ queryKey: ['getStatus'] })
