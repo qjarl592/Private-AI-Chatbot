@@ -47,9 +47,11 @@ export async function getStatus() {
   return OllamaModelListSchema.parse(data)
 }
 
+// ✅ 이미지 지원을 위한 스키마 수정
 export const ChatItemSchema = z.object({
   role: z.enum(['assistant', 'user']),
   content: z.string(),
+  images: z.optional(z.array(z.string())), // base64 이미지 배열
 })
 export type ChatItem = z.infer<typeof ChatItemSchema>
 
@@ -78,4 +80,22 @@ export async function postChat(props: OllamaChatProps) {
     stream: false,
   })
   return data
+}
+
+// ✅ 이미지를 base64로 변환하는 헬퍼 함수
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        // data:image/png;base64, 제거하고 순수 base64만 추출
+        const base64 = reader.result.split(',')[1]
+        resolve(base64)
+      } else {
+        reject(new Error('Failed to convert file to base64'))
+      }
+    }
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
 }

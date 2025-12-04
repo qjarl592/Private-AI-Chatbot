@@ -8,6 +8,7 @@ export const ChatInfoItemSchema = z.object({
 })
 export type ChatInfoItem = z.infer<typeof ChatInfoItemSchema>
 
+// ✅ 이미지 지원을 위한 스키마 수정
 const ChatHistoryItemSchema = ChatItemSchema.extend({
   model: z.optional(z.string()),
 })

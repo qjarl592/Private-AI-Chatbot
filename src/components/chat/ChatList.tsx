@@ -31,6 +31,7 @@ export default function ChatList({ chatId }: Props) {
         <ChatItem
           key={`chat-${chatId}-${item.id}`}
           side={item.role === 'user' ? 'right' : 'left'}
+          images={item.images} // ✅ 이미지 데이터 전달
         >
           {item.content}
         </ChatItem>

@@ -1,7 +1,7 @@
 import { useChatIdb } from '@/hooks/useChatIdb'
 import { cn } from '@/lib/utils'
 import type { ChatHistoryItem } from '@/services/idb'
-import { type ChatItem, postChatStream } from '@/services/ollama'
+import { type ChatItem, fileToBase64, postChatStream } from '@/services/ollama'
 import { useChatStreamStore } from '@/store/chatStreamStore'
 import { useImageUploadStore } from '@/store/imageUploadStore'
 import { useModelListStore } from '@/store/modelListStore'
@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { CornerDownLeft } from 'lucide-react'
 import { type KeyboardEvent, type Ref, useRef } from 'react'
+import { toast } from 'sonner'
 import { Button } from '../shadcn/button'
 import { Card } from '../shadcn/card'
 import { Textarea } from '../shadcn/textarea'
@@ -40,22 +41,36 @@ export default function InputBox({
   const queryClient = useQueryClient()
   const { open } = useSidebarStore()
 
-  const sendMsg = async (msg: string, chatId: string) => {
+  const sendMsg = async (msg: string, chatId: string, imageFiles: File[]) => {
     if (!model) return
 
     try {
-      // ✅ 1. 시작 시 스토어 초기화
       clearMsg()
       setIsFetching(true)
+
+      // ✅ 이미지를 base64로 변환
+      let base64Images: string[] = []
+      if (imageFiles.length > 0) {
+        try {
+          base64Images = await Promise.all(
+            imageFiles.map(file => fileToBase64(file))
+          )
+        } catch (error) {
+          console.error('Image conversion error:', error)
+          toast.error('이미지 변환에 실패했습니다.')
+          return
+        }
+      }
 
       // 이전 대화 기록
       const chatHistory = await getChatHistory(chatId)
 
-      // 대화 로그 기록
+      // ✅ 이미지가 있는 경우 images 필드 추가
       const historyItem: ChatHistoryItem = {
         model,
         role: 'user',
         content: msg,
+        ...(base64Images.length > 0 && { images: base64Images }),
       }
       await logChatHistory(chatId, historyItem)
       queryClient.invalidateQueries({ queryKey: ['getChatHistory', chatId] })
@@ -64,10 +79,15 @@ export default function InputBox({
       const curMsg: ChatItem = {
         role: 'user',
         content: msg,
+        ...(base64Images.length > 0 && { images: base64Images }),
       }
 
       const msgList = [
-        ...chatHistory.map(({ role, content }) => ({ role, content })),
+        ...chatHistory.map(({ role, content, images }) => ({
+          role,
+          content,
+          ...(images && { images }),
+        })),
         curMsg,
       ]
       const res = await postChatStream({ model, messages: msgList }, 30000)
@@ -85,15 +105,11 @@ export default function InputBox({
         while (true) {
           const { value, done } = await reader.read()
 
-          // ✅ 2. done일 때 break 사용 (return 대신)
           if (done) break
 
           buffer += decoder.decode(value, { stream: true })
 
-          // 줄바꿈으로 분리
           const lines = buffer.split('\n')
-
-          // 마지막 줄은 불완전할 수 있으므로 버퍼에 보관
           buffer = lines.pop() || ''
 
           for (const line of lines) {
@@ -108,7 +124,6 @@ export default function InputBox({
                 appendMsg(data.message.content)
               }
 
-              // ✅ 3. data.done 체크는 로깅용으로만 사용 (선택사항)
               if (data.done) {
                 console.log('Stream completed')
               }
@@ -118,11 +133,9 @@ export default function InputBox({
           }
         }
       } finally {
-        // ✅ 4. reader는 항상 릴리즈
         reader.releaseLock()
       }
 
-      // ✅ 5. 스트림 완료 후 DB 저장
       const historyAnsItem: ChatHistoryItem = {
         model,
         role: 'assistant',
@@ -132,9 +145,8 @@ export default function InputBox({
       queryClient.invalidateQueries({ queryKey: ['getChatHistory', chatId] })
     } catch (error) {
       console.error('Send message error:', error)
-      // 에러 토스트 표시 등 추가 가능
+      toast.error('메시지 전송에 실패했습니다.')
     } finally {
-      // ✅ 6. 항상 실행되는 cleanup
       clearMsg()
       setIsFetching(false)
     }
@@ -147,13 +159,17 @@ export default function InputBox({
 
     textareaRef.current.value = ''
 
+    // ✅ 이미지 파일 배열 추출
+    const imageFiles = images.map(img => img.file)
+
     const curChatId = chatId ?? (await startNewChat())
     if (!curChatId) return
     queryClient.invalidateQueries({ queryKey: ['getAllChatId'] })
 
-    sendMsg(msg, curChatId)
+    // ✅ 이미지 파일 전달
+    sendMsg(msg, curChatId, imageFiles)
 
-    // 이미지 전송 후 클리어 (추후 이미지 전송 로직 추가 시 활용)
+    // ✅ 이미지 전송 후 클리어
     if (images.length > 0) {
       clearImages()
     }
