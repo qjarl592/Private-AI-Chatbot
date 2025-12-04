@@ -24,7 +24,10 @@ export default function MainLayout({ children }: Props) {
       const data = await getStatus()
       if (data.models.length > 0) {
         setModelList(data.models)
-        if (model === '') {
+        if (
+          model === '' &&
+          data.models.find(item => item.model === model) === undefined
+        ) {
           setModel(data.models[0].model)
         }
       }
