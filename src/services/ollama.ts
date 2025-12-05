@@ -21,7 +21,7 @@ const OllamaModelDetailSchema = z.object({
   parent_model: z.string(),
   format: z.string(),
   family: z.string(),
-  families: z.array(z.string()),
+  families: z.nullable(z.array(z.string())),
   parameter_size: z.string(),
   quantization_level: z.string(),
 })
