@@ -285,11 +285,9 @@ function Guide() {
               </code>
               입니다.
             </p>
-            {!isProduction && (
-              <Link to="/" className={buttonVariants({ variant: 'default' })}>
-                챗봇 페이지로 돌아가기
-              </Link>
-            )}
+            <Link to="/" className={buttonVariants({ variant: 'default' })}>
+              챗봇 페이지로 돌아가기
+            </Link>
           </section>
         </div>
       </div>
