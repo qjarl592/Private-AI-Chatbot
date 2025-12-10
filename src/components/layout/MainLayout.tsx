@@ -18,6 +18,8 @@ export default function MainLayout({ children }: Props) {
   const { idbInstance } = useChatIdb()
   const { setModelList, model, setModel } = useModelListStore()
 
+  const isGuide = location.pathname === '/guide'
+
   useQuery({
     queryKey: ['getStatus'],
     queryFn: async () => {
@@ -33,9 +35,8 @@ export default function MainLayout({ children }: Props) {
       }
       return data
     },
+    enabled: !isGuide && !!idbInstance,
   })
-
-  const isGuide = location.pathname === '/guide'
 
   return (
     <SidebarProvider>
