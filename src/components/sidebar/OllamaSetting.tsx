@@ -1,3 +1,4 @@
+import { ollamaQueryFactory } from '@/queries/ollama'
 import {
   defaultUrl,
   getOllamaBaseURL,
@@ -19,23 +20,22 @@ export default function OllamaSetting() {
   const [urlValue, setUrlValue] = useState(curOllamaUrl)
   const queryClient = useQueryClient()
   const [isErr, setIsErr] = useState(false)
-  const { setModelList, setModel } = useModelListStore()
+  const { setModel } = useModelListStore()
 
   const connectOllama = async (url: string) => {
     setOllamaBaseURL(url.trim())
-    const prevStatus = queryClient.getQueryData(['todos'])
+    const query = ollamaQueryFactory.models.list()
+    const prevStatus = queryClient.getQueryData(query.queryKey)
     try {
       await queryClient.cancelQueries({ queryKey: ['getStatus'] })
       const newStatus = await getStatus()
       queryClient.setQueryData(['getStatus'], () => newStatus)
-      setModelList(newStatus.models)
       if (newStatus.models.length > 0) {
         setModel(newStatus.models[0].model)
       }
       setOpen(false)
-    } catch (e) {
-      console.log(e)
-      queryClient.setQueryData(['getStatus'], () => prevStatus)
+    } catch (_) {
+      queryClient.setQueryData(query.queryKey, prevStatus)
       setIsErr(true)
     }
   }

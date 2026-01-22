@@ -1,4 +1,7 @@
+import { ollamaQueryFactory } from '@/queries/ollama'
 import { useModelListStore } from '@/store/modelListStore'
+import { useQuery } from '@tanstack/react-query'
+import Optional from '../common/Optional'
 import {
   Select,
   SelectContent,
@@ -9,24 +12,28 @@ import {
 } from '../shadcn/select'
 
 export default function ModelSelect() {
-  const { modelList, model, setModel } = useModelListStore()
-
-  if (modelList.length === 0) return
+  const { data } = useQuery(ollamaQueryFactory.models.list())
+  const { model, setModel } = useModelListStore()
 
   return (
-    <Select value={model} onValueChange={value => setModel(value)}>
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {modelList.map(model => (
-            <SelectItem value={model.model} key={model.model}>
-              {model.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    <Optional option={!!data && data.models.length > 0}>
+      <Select
+        value={model ?? undefined}
+        onValueChange={value => setModel(value)}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {data?.models.map(model => (
+              <SelectItem value={model.model} key={model.model}>
+                {model.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </Optional>
   )
 }

@@ -5,19 +5,17 @@ import {
   Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-// import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 const RootLayout = () => (
-  <>
-    <MainLayout>
-      <Outlet />
-    </MainLayout>
-    {/* <TanStackRouterDevtools /> */}
-  </>
+  <MainLayout>
+    <Outlet />
+    <TanStackRouterDevtools />
+  </MainLayout>
 )
 
 // ✅ 404 페이지 컴포넌트
-function NotFound() {
+const NotFound = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4">
       <h1 className="font-bold text-4xl">404</h1>

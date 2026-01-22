@@ -1,16 +1,20 @@
 import { useChatIdb } from '@/hooks/useChatIdb'
 import { IDB_ERRORS } from '@/services/idb'
+import { useIdbStore } from '@/store/IdbStore'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import ChatLink from './ChatLink'
 
 export default function ChatLinkList() {
   const { getAllChatId } = useChatIdb()
+  const { idbInstance } = useIdbStore()
+
   const [isEditing, setIsEditing] = useState<null | string>(null)
 
   const { data } = useSuspenseQuery({
     queryKey: ['getAllChatId', getAllChatId],
     queryFn: async () => {
+      if (!idbInstance) return []
       try {
         return await getAllChatId()
       } catch (e) {

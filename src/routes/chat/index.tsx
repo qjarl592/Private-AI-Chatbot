@@ -1,18 +1,20 @@
 import ChatContainer from '@/components/chat/ChatContainer'
-import { getStatus } from '@/services/ollama'
+import { ollamaQueryFactory } from '@/queries/ollama'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 export const Route = createFileRoute('/chat/')({
   loader: async ({ context }) => {
-    if (!context.queryClient) return
+    const { queryClient } = context
+    if (!queryClient) return
+
     try {
-      return await context.queryClient.fetchQuery({
-        queryKey: ['getStatus'],
-        queryFn: getStatus,
-      })
-    } catch (err) {
-      console.log(err)
+      const queryOption = ollamaQueryFactory.models.list()
+      return (
+        queryClient.getQueryData(queryOption.queryKey) ??
+        (await queryClient.fetchQuery(queryOption))
+      )
+    } catch (_) {
       throw redirect({ to: '/guide' })
     }
   },
