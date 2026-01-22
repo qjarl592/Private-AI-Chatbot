@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import Optional from '../common/Optional'
 import ChatList from './ChatList'
 import InputBox from './InputBox'
 
@@ -12,7 +13,9 @@ export default function ChatContainer({ chatId }: Props) {
   return (
     <div className="mx-auto min-h-screen max-w-5xl overflow-x-hidden bg-muted">
       <div className="w-full px-24 pt-16">
-        {chatId && <ChatList chatId={chatId} />}
+        <Optional option={!!chatId}>
+          <ChatList chatId={chatId!} />
+        </Optional>
         <InputBox chatId={chatId} ref={inputBoxRef} align="bottom" />
         <div className="fixed bottom-0 left-0 h-36 w-full bg-muted" />
       </div>

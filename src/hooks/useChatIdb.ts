@@ -41,8 +41,15 @@ export function useChatIdb() {
   }
 
   const getChatHistory = async (chatId: string) => {
-    const history = await getItem(idbInstance, CHAT_STORE, chatId)
-    return history.value as ChatHistoryItem[]
+    try {
+      const history = await getItem(idbInstance, CHAT_STORE, chatId)
+      return history.value as ChatHistoryItem[]
+    } catch (e) {
+      if (e instanceof Error && e.message === IDB_ERRORS.ITEM_NOT_FOUND) {
+        return []
+      }
+      throw e
+    }
   }
 
   const startNewChat = async () => {

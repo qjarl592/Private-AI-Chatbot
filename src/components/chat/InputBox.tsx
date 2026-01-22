@@ -15,6 +15,7 @@ import { Button } from '../shadcn/button'
 import { Card } from '../shadcn/card'
 import { Textarea } from '../shadcn/textarea'
 
+import { chatIdbQueryFactory } from '@/queries/chatIdb'
 import { ImagePreviewList } from './ImagePreviewList'
 import { ImageUploadButton } from './ImageUploadButton'
 import ModelSelect from './ModelSelect'
@@ -73,7 +74,7 @@ export default function InputBox({
         ...(base64Images.length > 0 && { images: base64Images }),
       }
       await logChatHistory(chatId, historyItem)
-      queryClient.invalidateQueries({ queryKey: ['getChatHistory', chatId] })
+      queryClient.invalidateQueries(chatIdbQueryFactory.chatHistory(chatId))
 
       // ollama chat api call
       const curMsg: ChatItem = {
@@ -142,7 +143,7 @@ export default function InputBox({
         content: locChunkList.join(''),
       }
       await logChatHistory(chatId, historyAnsItem)
-      queryClient.invalidateQueries({ queryKey: ['getChatHistory', chatId] })
+      queryClient.invalidateQueries(chatIdbQueryFactory.chatHistory(chatId))
     } catch (error) {
       console.error('Send message error:', error)
       toast.error('메시지 전송에 실패했습니다.')
@@ -164,7 +165,7 @@ export default function InputBox({
 
     const curChatId = chatId ?? (await startNewChat())
     if (!curChatId) return
-    queryClient.invalidateQueries({ queryKey: ['getAllChatId'] })
+    queryClient.invalidateQueries(chatIdbQueryFactory.chatIdList())
 
     // ✅ 이미지 파일 전달
     sendMsg(msg, curChatId, imageFiles)

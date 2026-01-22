@@ -1,10 +1,15 @@
 import { useChatIdb } from '@/hooks/useChatIdb'
 import { useChatStreamStore } from '@/store/chatStreamStore'
-import { useQuery } from '@tanstack/react-query'
 
-import { useMemo } from 'react'
+import { addIncrementalIds, range } from '@/lib/array'
+import { chatIdbQueryFactory } from '@/queries/chatIdb'
+import type { ChatHistoryItem } from '@/services/idb'
+import { Suspense } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import Loader from '../common/Loader'
-import ChatItem from './ChatItem'
+import Optional from '../common/Optional'
+import UseSuspenseQuery from '../common/UseSuspenseQuery'
+import { ChatItem, ChatItemSkeleton } from './ChatItem'
 
 interface Props {
   chatId: string
@@ -14,30 +19,45 @@ export default function ChatList({ chatId }: Props) {
   const { idbInstance, getChatHistory } = useChatIdb()
   const { done, chunkList, isFetching } = useChatStreamStore()
 
-  const { data } = useQuery({
-    queryKey: ['getChatHistory', chatId],
-    queryFn: () => getChatHistory(chatId),
-    enabled: !!idbInstance,
-  })
-
-  const chatList = useMemo(() => {
-    if (!data) return []
-    return data.map((item, idx) => ({ ...item, id: idx }))
-  }, [data])
+  if (idbInstance === null) {
+    return <div>Initializing database...</div>
+  }
 
   return (
-    <div className="flex w-full flex-col gap-4 pb-48">
-      {chatList?.map(item => (
-        <ChatItem
-          key={`chat-${chatId}-${item.id}`}
-          side={item.role === 'user' ? 'right' : 'left'}
-          images={item.images} // ✅ 이미지 데이터 전달
+    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+      <div className="flex w-full flex-col gap-4 pb-48">
+        <Suspense
+          fallback={range(3).map(i => (
+            <ChatItemSkeleton key={i} side={i % 2 ? 'left' : 'right'} />
+          ))}
         >
-          {item.content}
-        </ChatItem>
-      ))}
-      {isFetching && done && <Loader />}
-      {!done && <ChatItem side="left">{chunkList.join('')}</ChatItem>}
-    </div>
+          <UseSuspenseQuery<ChatHistoryItem[]>
+            queryFn={() => getChatHistory(chatId)}
+            {...chatIdbQueryFactory.chatHistory(chatId)}
+          >
+            {({ data: chatList }) => (
+              <>
+                {addIncrementalIds(chatList).map(item => (
+                  <ChatItem
+                    key={`chat-${chatId}-${item.id}`}
+                    side={item.role === 'user' ? 'right' : 'left'}
+                    images={item.images}
+                  >
+                    {item.content}
+                  </ChatItem>
+                ))}
+              </>
+            )}
+          </UseSuspenseQuery>
+        </Suspense>
+
+        <Optional option={isFetching && done}>
+          <Loader />
+        </Optional>
+        <Optional option={!done}>
+          <ChatItem side="left">{chunkList.join('')}</ChatItem>
+        </Optional>
+      </div>
+    </ErrorBoundary>
   )
 }
