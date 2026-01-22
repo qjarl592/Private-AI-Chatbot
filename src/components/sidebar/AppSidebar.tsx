@@ -23,6 +23,7 @@ export function AppSidebar() {
   const { setOpen } = useSidebarStore()
 
   useEffect(() => {
+    // zustand store 와 상태 싱크 맞춤
     setOpen(open)
   }, [open, setOpen])
 
@@ -34,38 +35,50 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="h-9">
-                  <Link to="/chat">
-                    <MessageCirclePlus />
-                    <span>new chat</span>
-                  </Link>
-                </SidebarMenuButton>
-                <SidebarMenuButton asChild className="h-9">
-                  <Link to="/guide">
-                    <Info />
-                    <span>Guide</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <SidebarCommonMenuList />
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel>History</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <ChatLinkList />
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <SidebarChatHistory />
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-4">
         <OllamaSetting />
       </SidebarFooter>
     </Sidebar>
+  )
+}
+
+const SidebarCommonMenuList = () => {
+  return (
+    <SidebarGroupContent>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild className="h-9">
+            <Link to="/chat">
+              <MessageCirclePlus />
+              <span>new chat</span>
+            </Link>
+          </SidebarMenuButton>
+          <SidebarMenuButton asChild className="h-9">
+            <Link to="/guide">
+              <Info />
+              <span>Guide</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarGroupContent>
+  )
+}
+
+const SidebarChatHistory = () => {
+  return (
+    <SidebarGroupContent>
+      <SidebarMenu>
+        <ChatLinkList />
+      </SidebarMenu>
+    </SidebarGroupContent>
   )
 }

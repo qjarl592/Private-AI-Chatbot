@@ -29,8 +29,15 @@ export function useChatIdb() {
   }, [idbInstance, init])
 
   const getAllChatId = async () => {
-    const allIdList = await getItem(idbInstance, META_STORE, CHAT_ID_LIST_KEY)
-    return allIdList.value as ChatInfoItem[]
+    try {
+      const allIdList = await getItem(idbInstance, META_STORE, CHAT_ID_LIST_KEY)
+      return allIdList.value as ChatInfoItem[]
+    } catch (e) {
+      if (e instanceof Error && e.message === IDB_ERRORS.ITEM_NOT_FOUND) {
+        return []
+      }
+      throw e
+    }
   }
 
   const getChatHistory = async (chatId: string) => {
