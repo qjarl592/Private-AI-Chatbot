@@ -1,15 +1,15 @@
 import { addIncrementalIds, toObjectArray } from '@/lib/array'
 import { cn, copyToClipboard } from '@/lib/utils'
 import { Copy, RotateCcw } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import Optional from '../common/Optional'
 import { Button } from '../shadcn/button'
 import { Skeleton } from '../shadcn/skeleton'
+import MessageContent from './MessageContent'
 
 interface Props {
   side: 'left' | 'right'
-  children: ReactNode
   images?: string[] // ✅ 이미지 base64 배열 추가
   timestamp?: string // ISO 8601 timestamp
   content?: string // 메시지 내용 (복사 및 재시도용)
@@ -18,7 +18,6 @@ interface Props {
 
 export function ChatItem({
   side,
-  children,
   images,
   timestamp,
   content,
@@ -40,35 +39,39 @@ export function ChatItem({
 
   return (
     <div
-      className='relative flex w-full flex-col'
+      className="relative flex w-full flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-        <div
-          className={cn("max-w-[80%] whitespace-pre-wrap break-words rounded-2xl bg-primary-foreground px-4 py-2 shadow-lg", {
+      <div
+        className={cn(
+          'max-w-[80%] break-words rounded-2xl bg-primary-foreground px-4 py-2 shadow-lg',
+          {
             'self-end': side === 'right',
             'self-start': side === 'left',
-            'mb-7' : !isHovered  
-          })}
-        >
-          {/* ✅ 이미지 표시 */}
-          <Optional option={!!images && images.length > 0}>
-            <div className="mb-2 flex flex-wrap gap-2">
-              {addIncrementalIds(toObjectArray(images ?? [], 'img')).map(
-                item => (
-                  <img
-                    key={item.id}
-                    src={`data:image/png;base64,${item.img}`}
-                    alt={`uploaded-${item.id}`}
-                    className="max-h-48 rounded-lg object-contain"
-                  />
-                )
-              )}
-            </div>
-          </Optional>
+            'mb-7': !isHovered,
+          }
+        )}
+      >
+        {/* ✅ 이미지 표시 */}
+        <Optional option={!!images && images.length > 0}>
+          <div className="mb-2 flex flex-wrap gap-2">
+            {addIncrementalIds(toObjectArray(images ?? [], 'img')).map(
+              item => (
+                <img
+                  key={item.id}
+                  src={`data:image/png;base64,${item.img}`}
+                  alt={`uploaded-${item.id}`}
+                  className="max-h-48 rounded-lg object-contain"
+                />
+              )
+            )}
+          </div>
+        </Optional>
 
-          {children}
-        </div>
+        {/* 메시지 내용 - 마크다운 렌더링 */}
+        {content && <MessageContent content={content} />}
+      </div>
 
         {/* Utility Bar - 호버 시 표시 */}
         <Optional option={isHovered}>

@@ -106,9 +106,7 @@ export default function ChatList({ chatId }: Props) {
                     timestamp={item.timestamp}
                     content={item.content}
                     onRetry={item.role === 'user' ? handleRetry : undefined}
-                  >
-                    {item.content}
-                  </ChatItem>
+                  />
                 ))}
               </>
             )}
@@ -119,7 +117,7 @@ export default function ChatList({ chatId }: Props) {
           <Loader />
         </Optional>
         <Optional option={!done}>
-          <ChatItem side="left">{chunkList.join('')}</ChatItem>
+          <ChatItem side="left" content={chunkList.join('')} />
         </Optional>
       </div>
     </ErrorBoundary>
