@@ -1,5 +1,7 @@
 import ChatContainer from '@/components/chat/ChatContainer'
+import Loader from '@/components/common/Loader'
 import { useChatIdb } from '@/hooks/useChatIdb'
+import { chatIdbQueryFactory } from '@/queries/chatIdb'
 import { useIdbStore } from '@/store/IdbStore'
 import { useQuery } from '@tanstack/react-query'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
@@ -13,24 +15,20 @@ function Chat() {
   const { chatId } = Route.useParams()
   const { idbInstance } = useIdbStore()
 
-  const { data: isValidId, error } = useQuery({
-    queryKey: ['getAllChatId'],
-    queryFn: async () => {
-      const allInfo = await getAllChatId()
-      return !!allInfo.find(chatInfo => chatInfo.id === chatId)
-    },
-    staleTime: Number.POSITIVE_INFINITY,
-    gcTime: Number.POSITIVE_INFINITY,
+  const { data, isLoading } = useQuery({
+    ...chatIdbQueryFactory.chatIdList(),
+    queryFn: getAllChatId,
     enabled: !!idbInstance,
   })
+  const isValidId = !!data?.find(chatInfo => chatInfo.id === chatId)
 
-  if (isValidId) {
-    return <ChatContainer chatId={chatId} />
+  if (isLoading) {
+    return <Loader />
   }
 
-  if (error || isValidId === false) {
-    // alert 띄우기
+  if (!isValidId) {
     return <Navigate to="/chat" replace />
   }
-  return <>loading</>
+
+  return <ChatContainer chatId={chatId} />
 }
