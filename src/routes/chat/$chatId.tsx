@@ -22,7 +22,7 @@ function Chat() {
   })
   const isValidId = !!data?.find(chatInfo => chatInfo.id === chatId)
 
-  if (isLoading) {
+  if (!idbInstance || isLoading) {
     return <Loader />
   }
 

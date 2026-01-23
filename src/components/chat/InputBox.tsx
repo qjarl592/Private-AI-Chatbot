@@ -1,7 +1,7 @@
 import { useChatIdb } from '@/hooks/useChatIdb'
 import { cn } from '@/lib/utils'
+import { convertFilesToBase64, sendChatMessage } from '@/services/chat'
 import type { ChatHistoryItem } from '@/services/idb'
-import { type ChatItem, fileToBase64, postChatStream } from '@/services/ollama'
 import { useChatStreamStore } from '@/store/chatStreamStore'
 import { useImageUploadStore } from '@/store/imageUploadStore'
 import { useModelListStore } from '@/store/modelListStore'
@@ -53,9 +53,7 @@ export default function InputBox({
       let base64Images: string[] = []
       if (imageFiles.length > 0) {
         try {
-          base64Images = await Promise.all(
-            imageFiles.map(file => fileToBase64(file))
-          )
+          base64Images = await convertFilesToBase64(imageFiles)
         } catch (error) {
           console.error('Image conversion error:', error)
           toast.error('이미지 변환에 실패했습니다.')
@@ -71,76 +69,30 @@ export default function InputBox({
         model,
         role: 'user',
         content: msg,
+        timestamp: new Date().toISOString(),
         ...(base64Images.length > 0 && { images: base64Images }),
       }
       await logChatHistory(chatId, historyItem)
       queryClient.invalidateQueries(chatIdbQueryFactory.chatHistory(chatId))
 
-      // ollama chat api call
-      const curMsg: ChatItem = {
-        role: 'user',
+      // 채팅 메시지 전송
+      const result = await sendChatMessage({
+        model,
         content: msg,
-        ...(base64Images.length > 0 && { images: base64Images }),
-      }
+        images: base64Images.length > 0 ? base64Images : undefined,
+        chatHistory,
+        onChunk: chunk => appendMsg(chunk),
+      })
 
-      const msgList = [
-        ...chatHistory.map(({ role, content, images }) => ({
-          role,
-          content,
-          ...(images && { images }),
-        })),
-        curMsg,
-      ]
-      const res = await postChatStream({ model, messages: msgList }, 30000)
-
-      if (!res.ok || res.body === null) {
-        throw new Error('Stream response error')
-      }
-
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      const locChunkList: string[] = []
-      let buffer = ''
-
-      try {
-        while (true) {
-          const { value, done } = await reader.read()
-
-          if (done) break
-
-          buffer += decoder.decode(value, { stream: true })
-
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
-
-          for (const line of lines) {
-            const trimmedLine = line.trim()
-            if (!trimmedLine) continue
-
-            try {
-              const data = JSON.parse(trimmedLine)
-
-              if (data.message?.content) {
-                locChunkList.push(data.message.content)
-                appendMsg(data.message.content)
-              }
-
-              if (data.done) {
-                console.log('Stream completed')
-              }
-            } catch (e) {
-              console.warn('파싱 실패한 라인:', trimmedLine, e)
-            }
-          }
-        }
-      } finally {
-        reader.releaseLock()
+      if (!result.success) {
+        throw result.error || new Error('메시지 전송 실패')
       }
 
       const historyAnsItem: ChatHistoryItem = {
         model,
         role: 'assistant',
-        content: locChunkList.join(''),
+        content: result.fullResponse,
+        timestamp: new Date().toISOString(),
       }
       await logChatHistory(chatId, historyAnsItem)
       queryClient.invalidateQueries(chatIdbQueryFactory.chatHistory(chatId))
@@ -176,7 +128,9 @@ export default function InputBox({
     }
 
     if (!chatId) {
-      navigate({ to: '/chat/$chatId', params: { chatId: curChatId } })
+      setTimeout(() => {
+        navigate({ to: '/chat/$chatId', params: { chatId: curChatId } })
+      }, 300)
     } else {
       setTimeout(() => {
         window.scrollTo({
