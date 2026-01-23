@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import Optional from '../common/Optional'
 import ChatList from './ChatList'
 import InputBox from './InputBox'
+import { useChatIdb } from '@/hooks/useChatIdb'
 
 interface Props {
   chatId?: string
@@ -9,11 +10,13 @@ interface Props {
 
 export default function ChatContainer({ chatId }: Props) {
   const inputBoxRef = useRef<HTMLDivElement>(null)
+    const {  idbInstance } = useChatIdb()
+  
 
   return (
     <div className="mx-auto min-h-screen max-w-5xl overflow-x-hidden bg-muted">
       <div className="w-full px-24 pt-16">
-        <Optional option={!!chatId}>
+        <Optional option={!!chatId && !!idbInstance}>
           <ChatList chatId={chatId!} />
         </Optional>
         <InputBox chatId={chatId} ref={inputBoxRef} align="bottom" />

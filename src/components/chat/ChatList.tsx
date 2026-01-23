@@ -20,15 +20,13 @@ interface Props {
 }
 
 export default function ChatList({ chatId }: Props) {
-  const { idbInstance, getChatHistory, logChatHistory } = useChatIdb()
+  const {  getChatHistory, logChatHistory } = useChatIdb()
   const { done, chunkList, isFetching, appendMsg, clearMsg, setIsFetching } =
     useChatStreamStore()
   const { model } = useModelListStore()
   const queryClient = useQueryClient()
 
-  if (idbInstance === null) {
-    return <div>Initializing database...</div>
-  }
+
 
   // 재시도 핸들러
   const handleRetry = async (content: string, images?: string[]) => {
@@ -77,7 +75,6 @@ export default function ChatList({ chatId }: Props) {
       await logChatHistory(chatId, historyAnsItem)
       queryClient.invalidateQueries(chatIdbQueryFactory.chatHistory(chatId))
 
-      toast.success('메시지를 재전송했습니다.')
     } catch (error) {
       console.error('Retry error:', error)
       toast.error('메시지 재전송에 실패했습니다.')
