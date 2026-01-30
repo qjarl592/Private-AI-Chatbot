@@ -16,13 +16,7 @@ interface Props {
   onRetry?: (content: string, images?: string[]) => void // 재시도 콜백
 }
 
-export function ChatItem({
-  side,
-  images,
-  timestamp,
-  content,
-  onRetry,
-}: Props) {
+export function ChatItem({ side, images, timestamp, content, onRetry }: Props) {
   const [isHovered, setIsHovered] = useState(false)
 
   const handleCopy = () => {
@@ -56,16 +50,14 @@ export function ChatItem({
         {/* ✅ 이미지 표시 */}
         <Optional option={!!images && images.length > 0}>
           <div className="mb-2 flex flex-wrap gap-2">
-            {addIncrementalIds(toObjectArray(images ?? [], 'img')).map(
-              item => (
-                <img
-                  key={item.id}
-                  src={`data:image/png;base64,${item.img}`}
-                  alt={`uploaded-${item.id}`}
-                  className="max-h-48 rounded-lg object-contain"
-                />
-              )
-            )}
+            {addIncrementalIds(toObjectArray(images ?? [], 'img')).map(item => (
+              <img
+                key={item.id}
+                src={`data:image/png;base64,${item.img}`}
+                alt={`uploaded-${item.id}`}
+                className="max-h-48 rounded-lg object-contain"
+              />
+            ))}
           </div>
         </Optional>
 
@@ -73,15 +65,15 @@ export function ChatItem({
         {content && <MessageContent content={content} />}
       </div>
 
-        {/* Utility Bar - 호버 시 표시 */}
-        <Optional option={isHovered}>
-          <ChatItemUtilBar
-            timestamp={timestamp}
-            side={side}
-            onCopy={handleCopy}
-            onRetry={side === 'right' ? handleRetry : undefined}
-          />
-        </Optional>
+      {/* Utility Bar - 호버 시 표시 */}
+      <Optional option={isHovered}>
+        <ChatItemUtilBar
+          timestamp={timestamp}
+          side={side}
+          onCopy={handleCopy}
+          onRetry={side === 'right' ? handleRetry : undefined}
+        />
+      </Optional>
     </div>
   )
 }
@@ -122,7 +114,7 @@ function ChatItemUtilBar({
   return (
     <div
       className={cn(
-        'mt-1 flex items-center gap-2 text-muted-foreground text-xs h-6',
+        'mt-1 flex h-6 items-center gap-2 text-muted-foreground text-xs',
         {
           'self-end': side === 'right',
           'self-start': side === 'left',
