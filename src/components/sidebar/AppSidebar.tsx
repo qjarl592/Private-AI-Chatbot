@@ -1,6 +1,6 @@
 import { useSidebarStore } from '@/store/sidebarStore'
 import { Link } from '@tanstack/react-router'
-import { Info, MessageCirclePlus } from 'lucide-react'
+import { FilePlusCorner, Info, MessageCirclePlus } from 'lucide-react'
 import { useEffect } from 'react'
 import {
   Sidebar,
@@ -58,13 +58,20 @@ const SidebarCommonMenuList = () => {
           <SidebarMenuButton asChild className="h-9">
             <Link to="/chat">
               <MessageCirclePlus />
-              <span>new chat</span>
+              <span>New Chat</span>
             </Link>
           </SidebarMenuButton>
           <SidebarMenuButton asChild className="h-9">
             <Link to="/guide">
               <Info />
               <span>Guide</span>
+            </Link>
+          </SidebarMenuButton>
+
+          <SidebarMenuButton asChild className="h-9" disabled>
+            <Link to="/rules">
+              <FilePlusCorner />
+              Rules
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

@@ -26,6 +26,7 @@ const DB_NAME = 'private-ai-chat-db'
 const DB_VERSION = 1
 export const META_STORE = 'meta'
 export const CHAT_STORE = 'chat'
+export const RULE_STORE = 'rule'
 export const IDB_ERRORS = {
   NOT_INITIALIZED: 'IDB instance is not initialized.',
   STORAGE_NOT_EXIST: 'IDB storage does not exist.',
@@ -40,6 +41,9 @@ export async function initIdb() {
       }
       if (!db.objectStoreNames.contains(CHAT_STORE)) {
         db.createObjectStore(CHAT_STORE, { keyPath: 'key' })
+      }
+      if (!db.objectStoreNames.contains(RULE_STORE)) {
+        db.createObjectStore(RULE_STORE, { keyPath: 'key' })
       }
     },
   })

@@ -1,4 +1,5 @@
 import { addIncrementalIds, toObjectArray } from '@/lib/array'
+import { formatDateTo, runWithNullable } from '@/lib/date'
 import { cn, copyToClipboard } from '@/lib/utils'
 import { Copy, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
@@ -109,7 +110,8 @@ function ChatItemUtilBar({
   onCopy,
   onRetry,
 }: ChatItemUtilBarProps) {
-  const formattedTime = formatTimestamp(timestamp)
+  const formatTimestamp = formatDateTo('yyyy-MM-dd hh:mm:ss')
+  const formattedTime = runWithNullable([timestamp], formatTimestamp)
 
   return (
     <div
@@ -149,26 +151,4 @@ function ChatItemUtilBar({
       </Optional>
     </div>
   )
-}
-
-// ============================================================================
-// Utility Functions
-// ============================================================================
-
-/**
- * ISO 8601 타임스탬프를 yyyy-MM-dd hh:mm:ss 형식으로 변환
- */
-function formatTimestamp(isoString?: string): string {
-  if (!isoString) return ''
-
-  const date = new Date(isoString)
-
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
