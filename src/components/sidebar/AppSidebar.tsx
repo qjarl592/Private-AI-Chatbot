@@ -68,7 +68,7 @@ const SidebarCommonMenuList = () => {
             </Link>
           </SidebarMenuButton>
 
-          <SidebarMenuButton asChild className="h-9" disabled>
+          <SidebarMenuButton asChild className="h-9" >
             <Link to="/rules">
               <FilePlusCorner />
               Rules

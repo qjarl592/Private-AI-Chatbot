@@ -5,6 +5,8 @@ import { addIncrementalIds, range } from '@/lib/array'
 import { chatIdbQueryFactory } from '@/queries/chatIdb'
 import { sendChatMessage } from '@/services/chat'
 import type { ChatHistoryItem } from '@/services/idb'
+import { getActiveRules, mergeRules } from '@/services/ruleService'
+import { useIdbStore } from '@/store/IdbStore'
 import { useModelListStore } from '@/store/modelListStore'
 import { useQueryClient } from '@tanstack/react-query'
 import { Suspense } from 'react'
@@ -25,6 +27,7 @@ export default function ChatList({ chatId }: Props) {
     useChatStreamStore()
   const { model } = useModelListStore()
   const queryClient = useQueryClient()
+  const { idbInstance } = useIdbStore()
 
 
 
@@ -53,6 +56,10 @@ export default function ChatList({ chatId }: Props) {
       // 이전 대화 기록 가져오기
       const chatHistory = await getChatHistory(chatId)
 
+      // 활성화된 규칙 가져오기 및 병합
+      const activeRules = await getActiveRules(idbInstance)
+      const mergedRules = mergeRules(activeRules)
+
       // 채팅 메시지 전송
       const result = await sendChatMessage({
         model,
@@ -60,6 +67,7 @@ export default function ChatList({ chatId }: Props) {
         images,
         chatHistory,
         onChunk: chunk => appendMsg(chunk),
+        rules: mergedRules || undefined,
       })
 
       if (!result.success) {

@@ -2,6 +2,8 @@ import { useChatIdb } from '@/hooks/useChatIdb'
 import { cn } from '@/lib/utils'
 import { convertFilesToBase64, sendChatMessage } from '@/services/chat'
 import type { ChatHistoryItem } from '@/services/idb'
+import { getActiveRules, mergeRules } from '@/services/ruleService'
+import { useIdbStore } from '@/store/IdbStore'
 import { useChatStreamStore } from '@/store/chatStreamStore'
 import { useImageUploadStore } from '@/store/imageUploadStore'
 import { useModelListStore } from '@/store/modelListStore'
@@ -41,6 +43,7 @@ export default function InputBox({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { open } = useSidebarStore()
+  const { idbInstance } = useIdbStore()
 
   const sendMsg = async (msg: string, chatId: string, imageFiles: File[]) => {
     if (!model) return
@@ -64,6 +67,10 @@ export default function InputBox({
       // 이전 대화 기록
       const chatHistory = await getChatHistory(chatId)
 
+      // 활성화된 규칙 가져오기 및 병합
+      const activeRules = await getActiveRules(idbInstance)
+      const mergedRules = mergeRules(activeRules)
+
       // ✅ 이미지가 있는 경우 images 필드 추가
       const historyItem: ChatHistoryItem = {
         model,
@@ -82,6 +89,7 @@ export default function InputBox({
         images: base64Images.length > 0 ? base64Images : undefined,
         chatHistory,
         onChunk: chunk => appendMsg(chunk),
+        rules: mergedRules || undefined,
       })
 
       if (!result.success) {

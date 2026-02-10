@@ -49,7 +49,7 @@ export async function getStatus() {
 
 // ✅ 이미지 지원을 위한 스키마 수정
 export const ChatItemSchema = z.object({
-  role: z.enum(['assistant', 'user']),
+  role: z.enum(['assistant', 'user', 'system']),
   content: z.string(),
   images: z.optional(z.array(z.string())), // base64 이미지 배열
 })

@@ -8,6 +8,7 @@ interface SendChatMessageParams {
   chatHistory: ChatHistoryItem[]
   onChunk: (chunk: string) => void
   timeout?: number
+  rules?: string
 }
 
 interface SendChatMessageResult {
@@ -29,6 +30,7 @@ export async function sendChatMessage({
   chatHistory,
   onChunk,
   timeout = 30000,
+  rules,
 }: SendChatMessageParams): Promise<SendChatMessageResult> {
   try {
     // 현재 메시지 생성
@@ -40,6 +42,8 @@ export async function sendChatMessage({
 
     // 전체 메시지 리스트 구성
     const msgList: ChatItem[] = [
+      // Rules를 system message로 prepend
+      ...(rules ? [{ role: 'system' as const, content: rules }] : []),
       ...chatHistory.map(({ role, content, images }) => ({
         role,
         content,

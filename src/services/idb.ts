@@ -15,15 +15,34 @@ const ChatHistoryItemSchema = ChatItemSchema.extend({
 })
 export type ChatHistoryItem = z.infer<typeof ChatHistoryItemSchema>
 
+// Global rule schema
+export const GlobalRuleSchema = z.object({
+  content: z.string(),
+  updatedAt: z.string(), // ISO 8601 timestamp
+})
+export type GlobalRule = z.infer<typeof GlobalRuleSchema>
+
+// Custom rule schema
+export const CustomRuleSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  content: z.string(),
+  enabled: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+})
+export type CustomRule = z.infer<typeof CustomRuleSchema>
+
 export interface IdbItem {
   key: string
-  value: ChatHistoryItem[] | ChatInfoItem[]
+  value: ChatHistoryItem[] | ChatInfoItem[] | GlobalRule | CustomRule
 }
 
-export type IdbStorage = 'meta' | 'chat'
+export type IdbStorage = 'meta' | 'chat' | 'rule'
 
 const DB_NAME = 'private-ai-chat-db'
-const DB_VERSION = 1
+const DB_VERSION = 2
 export const META_STORE = 'meta'
 export const CHAT_STORE = 'chat'
 export const RULE_STORE = 'rule'
