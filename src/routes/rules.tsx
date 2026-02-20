@@ -33,8 +33,8 @@ import {
   toggleCustomRule,
   updateCustomRule,
 } from '@/services/ruleService'
-import { useConfirm } from '@/store/confirmStore'
 import { useIdbStore } from '@/store/IdbStore'
+import { useConfirm } from '@/store/confirmStore'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { EllipsisVertical, Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -56,7 +56,7 @@ export const Route = createFileRoute('/rules')({
 })
 
 function RouteComponent() {
-  const { idbInstance  } = useIdbStore()
+  const { idbInstance } = useIdbStore()
   const { requestConfirm } = useConfirm()
   const [globalRules, setGlobalRules] = useState('')
   const [isEditingGlobalRule, setIsEditingGlobalRule] = useState(false)
@@ -150,6 +150,7 @@ function RouteComponent() {
     setIsEditingFormContent(false)
     originalFormContentRef.current = rule.content
     setOpenDialog(true)
+    setOpenDropdown(null)
   }
 
   const handleSaveRule = async () => {
@@ -291,14 +292,17 @@ function RouteComponent() {
                           </CardDescription>
                         </div>
                       </div>
-                      <DropdownMenu open={rule.id === openDropdown} onOpenChange={(open) => {
-                        console.log('open change')
-                        if (open) {
-                          setOpenDropdown(rule.id)
-                        } else {
-                          setOpenDropdown(null)
-                        }
-                      }}  >
+                      <DropdownMenu
+                        open={rule.id === openDropdown}
+                        onOpenChange={open => {
+                          console.log('open change')
+                          if (open) {
+                            setOpenDropdown(rule.id)
+                          } else {
+                            setOpenDropdown(null)
+                          }
+                        }}
+                      >
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
@@ -332,23 +336,22 @@ function RouteComponent() {
       </section>
 
       {/* Create/Edit Dialog */}
-      <Dialog 
-        open={openDialog} 
-        onOpenChange={(open) => {
+      <Dialog
+        open={openDialog}
+        onOpenChange={open => {
           setOpenDialog(open)
           // Reset form when closing dialog
           if (!open) {
-              setEditingRule(null)
-              setFormTitle('')
-              setFormDescription('')
-              setFormContent('')
-              setIsEditingFormContent(false)
-              originalFormContentRef.current = ''
+            setEditingRule(null)
+            setFormTitle('')
+            setFormDescription('')
+            setFormContent('')
+            setIsEditingFormContent(false)
+            originalFormContentRef.current = ''
           }
         }}
-        
       >
-        <DialogContent className="max-w-2xl"  >
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingRule ? 'Edit Rule' : 'Create New Rule'}
