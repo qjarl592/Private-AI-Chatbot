@@ -1,0 +1,231 @@
+# .github/workflows/update-readme.yml
+name: AI README Updater
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  update-readme:
+    if: |
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '/update-readme')
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: 추가 지시사항 파싱
+        id: parse
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          INSTRUCTION="${COMMENT#/update-readme}"
+          INSTRUCTION="${INSTRUCTION#"${INSTRUCTION%%[! ]*}"}"
+          echo "instruction=$INSTRUCTION" >> $GITHUB_OUTPUT
+
+          if [ -z "$INSTRUCTION" ]; then
+            echo "mode=initial" >> $GITHUB_OUTPUT
+          else
+            echo "mode=refine" >> $GITHUB_OUTPUT
+          fi
+
+      - name: PR 브랜치 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.issue.pull_request.head.ref }}
+          repository: ${{ github.event.issue.pull_request.head.repo.full_name }}
+
+      - name: Python 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 의존성 설치
+        run: pip install google-generativeai
+
+      - name: 시스템 프롬프트 로드
+        id: load_prompt
+        run: |
+          if [ ! -f ".github/readme-prompt.md" ]; then
+            echo "❌ .github/readme-prompt.md 파일이 없습니다."
+            exit 1
+          fi
+          echo "시스템 프롬프트 로드 완료"
+
+      # -------------------------------------------------------
+      # [initial 모드] diff 수집
+      # -------------------------------------------------------
+      - name: README 마지막 수정 커밋 ~ 현재 diff 수집
+        if: steps.parse.outputs.mode == 'initial'
+        id: collect_diff
+        run: |
+          LAST_README_COMMIT=$(git log -1 --pretty=format:"%H" -- README.md)
+          echo "last_readme_commit=$LAST_README_COMMIT" >> $GITHUB_OUTPUT
+
+          if [ -z "$LAST_README_COMMIT" ]; then
+            git diff HEAD -- . ':(exclude)README.md' > /tmp/code_diff.txt
+          else
+            git diff $LAST_README_COMMIT HEAD -- . ':(exclude)README.md' > /tmp/code_diff.txt
+          fi
+
+          if [ ! -s /tmp/code_diff.txt ]; then
+            echo "has_diff=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_diff=true" >> $GITHUB_OUTPUT
+            truncate -s 100k /tmp/code_diff.txt
+          fi
+
+      - name: 업데이트 불필요 시 코멘트
+        if: |
+          steps.parse.outputs.mode == 'initial' &&
+          steps.collect_diff.outputs.has_diff == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ README 마지막 업데이트 이후 코드 변경사항이 없어 업데이트가 필요하지 않습니다.'
+            })
+
+      # -------------------------------------------------------
+      # [initial 모드] Gemini - diff 기반 업데이트
+      # -------------------------------------------------------
+      - name: "[Initial] Gemini로 README 업데이트"
+        if: |
+          steps.parse.outputs.mode == 'initial' &&
+          steps.collect_diff.outputs.has_diff == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 << 'PYTHON'
+          import os
+          import google.generativeai as genai
+
+          genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+          system_prompt = open(".github/readme-prompt.md").read()
+          current_readme = open("README.md").read()
+          code_diff = open("/tmp/code_diff.txt").read()
+
+          model = genai.GenerativeModel(
+              model_name="gemini-2.0-flash",
+              system_instruction=system_prompt
+          )
+
+          prompt = f"""아래 정보를 바탕으로 README.md를 업데이트해주세요.
+
+          ## 현재 README.md
+          {current_readme}
+
+          ## README 마지막 업데이트 이후 코드 변경사항 (git diff)
+          {code_diff}
+
+          ## 지시사항
+          - 코드 변경사항을 분석해서 README에 반영이 필요한 부분만 업데이트하세요.
+          - 변경사항과 관련 없는 섹션은 절대 수정하지 마세요.
+          - 업데이트가 필요 없다고 판단되면 기존 README를 그대로 출력하세요.
+          """
+
+          response = model.generate_content(prompt)
+          with open("README.md", "w") as f:
+              f.write(response.text)
+          print("README 업데이트 완료")
+          PYTHON
+
+      # -------------------------------------------------------
+      # [refine 모드] Gemini - 추가 지시사항 반영
+      # -------------------------------------------------------
+      - name: "[Refine] Gemini로 README 수정"
+        if: steps.parse.outputs.mode == 'refine'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          INSTRUCTION: ${{ steps.parse.outputs.instruction }}
+        run: |
+          python3 << 'PYTHON'
+          import os
+          import google.generativeai as genai
+
+          genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+          system_prompt = open(".github/readme-prompt.md").read()
+          current_readme = open("README.md").read()
+          instruction = os.environ["INSTRUCTION"]
+
+          model = genai.GenerativeModel(
+              model_name="gemini-2.0-flash",
+              system_instruction=system_prompt
+          )
+
+          prompt = f"""아래 README.md를 사용자의 지시사항에 따라 수정해주세요.
+
+          ## 현재 README.md
+          {current_readme}
+
+          ## 사용자 지시사항
+          {instruction}
+
+          지시사항에 해당하는 부분만 수정하고 나머지는 그대로 유지하세요.
+          """
+
+          response = model.generate_content(prompt)
+          with open("README.md", "w") as f:
+              f.write(response.text)
+          print("README 수정 완료")
+          PYTHON
+
+      # -------------------------------------------------------
+      # 커밋 & 푸시 (두 모드 공통)
+      # -------------------------------------------------------
+      - name: 변경사항 커밋 & 푸시
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+
+          if git diff --staged --quiet; then
+            echo "committed=false" >> $GITHUB_OUTPUT
+          else
+            MODE="${{ steps.parse.outputs.mode }}"
+            INSTRUCTION="${{ steps.parse.outputs.instruction }}"
+            if [ "$MODE" = "refine" ]; then
+              git commit -m "docs: AI README 수정 - $INSTRUCTION [skip ci]"
+            else
+              git commit -m "docs: AI README 업데이트 [skip ci]"
+            fi
+            git push
+            echo "committed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 결과 코멘트
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const committed = '${{ steps.commit.outputs.committed }}';
+            const mode = '${{ steps.parse.outputs.mode }}';
+            const hasDiff = '${{ steps.collect_diff.outputs.has_diff }}';
+
+            if (mode === 'initial' && hasDiff === 'false') return;
+
+            let message = '';
+            if (committed === 'true') {
+              message = mode === 'refine'
+                ? `✅ 지시사항을 반영해서 README를 수정했습니다.\n\n추가 수정이 필요하면 \`/update-readme <지시사항>\` 으로 알려주세요.`
+                : `✅ README를 업데이트했습니다.\n\n수정이 필요하면 \`/update-readme <지시사항>\` 으로 알려주세요.\n예) \`/update-readme 설치 방법 섹션을 더 자세하게 작성해줘\``;
+            } else {
+              message = mode === 'refine'
+                ? `ℹ️ 지시사항을 검토했지만 변경할 내용이 없다고 판단했습니다.`
+                : `ℹ️ 코드 변경사항이 있지만 README에 반영할 내용이 없다고 판단했습니다.`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            })
