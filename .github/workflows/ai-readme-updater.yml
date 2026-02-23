@@ -44,13 +44,12 @@ jobs:
           python-version: '3.11'
 
       - name: 의존성 설치
-        run: pip install google-generativeai
+        run: pip install google-genai
 
-      - name: 시스템 프롬프트 로드
-        id: load_prompt
+      - name: 시스템 프롬프트 확인
         run: |
-          if [ ! -f ".github/readme-prompt.md" ]; then
-            echo "❌ .github/readme-prompt.md 파일이 없습니다."
+          if [ ! -f ".github/workflows/ai-readme-updater-prompt.md" ]; then
+            echo "❌ .github/workflows/ai-readme-updater-prompt.md 파일이 없습니다."
             exit 1
           fi
           echo "시스템 프롬프트 로드 완료"
@@ -93,7 +92,7 @@ jobs:
             })
 
       # -------------------------------------------------------
-      # [initial 모드] Gemini - diff 기반 업데이트
+      # [initial 모드] Gemini 3 Flash - diff 기반 업데이트
       # -------------------------------------------------------
       - name: "[Initial] Gemini로 README 업데이트"
         if: |
@@ -104,18 +103,14 @@ jobs:
         run: |
           python3 << 'PYTHON'
           import os
-          import google.generativeai as genai
+          from google import genai
+          from google.genai import types
 
-          genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+          client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-          system_prompt = open(".github/readme-prompt.md").read()
+          system_prompt = open(".github/workflows/ai-readme-updater-prompt.md").read()
           current_readme = open("README.md").read()
           code_diff = open("/tmp/code_diff.txt").read()
-
-          model = genai.GenerativeModel(
-              model_name="gemini-2.0-flash",
-              system_instruction=system_prompt
-          )
 
           prompt = f"""아래 정보를 바탕으로 README.md를 업데이트해주세요.
 
@@ -131,14 +126,21 @@ jobs:
           - 업데이트가 필요 없다고 판단되면 기존 README를 그대로 출력하세요.
           """
 
-          response = model.generate_content(prompt)
+          response = client.models.generate_content(
+              model="gemini-3-flash-preview",
+              contents=prompt,
+              config=types.GenerateContentConfig(
+                  system_instruction=system_prompt,
+              )
+          )
+
           with open("README.md", "w") as f:
               f.write(response.text)
           print("README 업데이트 완료")
           PYTHON
 
       # -------------------------------------------------------
-      # [refine 모드] Gemini - 추가 지시사항 반영
+      # [refine 모드] Gemini 3 Flash - 추가 지시사항 반영
       # -------------------------------------------------------
       - name: "[Refine] Gemini로 README 수정"
         if: steps.parse.outputs.mode == 'refine'
@@ -148,18 +150,14 @@ jobs:
         run: |
           python3 << 'PYTHON'
           import os
-          import google.generativeai as genai
+          from google import genai
+          from google.genai import types
 
-          genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+          client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-          system_prompt = open(".github/readme-prompt.md").read()
+          system_prompt = open(".github/workflows/ai-readme-updater-prompt.md").read()
           current_readme = open("README.md").read()
           instruction = os.environ["INSTRUCTION"]
-
-          model = genai.GenerativeModel(
-              model_name="gemini-2.0-flash",
-              system_instruction=system_prompt
-          )
 
           prompt = f"""아래 README.md를 사용자의 지시사항에 따라 수정해주세요.
 
@@ -172,7 +170,14 @@ jobs:
           지시사항에 해당하는 부분만 수정하고 나머지는 그대로 유지하세요.
           """
 
-          response = model.generate_content(prompt)
+          response = client.models.generate_content(
+              model="gemini-3-flash-preview",
+              contents=prompt,
+              config=types.GenerateContentConfig(
+                  system_instruction=system_prompt,
+              )
+          )
+
           with open("README.md", "w") as f:
               f.write(response.text)
           print("README 수정 완료")
