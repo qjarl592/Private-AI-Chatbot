@@ -203,7 +203,8 @@ jobs:
             else
               git commit -m "docs: AI README 업데이트 [skip ci]"
             fi
-            git push
+            PR_BRANCH="${{ github.event.issue.pull_request.head.ref }}"
+            git push origin HEAD:$PR_BRANCH
             echo "committed=true" >> $GITHUB_OUTPUT
           fi
 
