@@ -23,7 +23,7 @@ export function AppSidebar() {
   const { setOpen } = useSidebarStore()
 
   useEffect(() => {
-    // zustand store 와 상태 싱크 맞춤
+    // zustand store 와 상태 싱크
     setOpen(open)
   }, [open, setOpen])
 
@@ -68,7 +68,7 @@ const SidebarCommonMenuList = () => {
             </Link>
           </SidebarMenuButton>
 
-          <SidebarMenuButton asChild className="h-9" >
+          <SidebarMenuButton asChild className="h-9">
             <Link to="/rules">
               <FilePlusCorner />
               Rules
