@@ -31,6 +31,19 @@ jobs:
             echo "mode=refine" >> $GITHUB_OUTPUT
           fi
 
+      - name: 시작 코멘트
+        id: start_comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⏳ README 업데이트 중입니다...'
+            });
+            core.setOutput('comment_id', comment.data.id);
+
       - name: PR 브랜치 체크아웃
         uses: actions/checkout@v4
         with:
@@ -76,20 +89,6 @@ jobs:
             echo "has_diff=true" >> $GITHUB_OUTPUT
             truncate -s 100k /tmp/code_diff.txt
           fi
-
-      - name: 업데이트 불필요 시 코멘트
-        if: |
-          steps.parse.outputs.mode == 'initial' &&
-          steps.collect_diff.outputs.has_diff == 'false'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '✅ README 마지막 업데이트 이후 코드 변경사항이 없어 업데이트가 필요하지 않습니다.'
-            })
 
       # -------------------------------------------------------
       # [initial 모드] Gemini 3 Flash - diff 기반 업데이트
@@ -208,30 +207,37 @@ jobs:
             echo "committed=true" >> $GITHUB_OUTPUT
           fi
 
+      # -------------------------------------------------------
+      # 결과 코멘트 (시작 코멘트 수정)
+      # -------------------------------------------------------
       - name: 결과 코멘트
+        if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const committed = '${{ steps.commit.outputs.committed }}';
             const mode = '${{ steps.parse.outputs.mode }}';
             const hasDiff = '${{ steps.collect_diff.outputs.has_diff }}';
-
-            if (mode === 'initial' && hasDiff === 'false') return;
+            const commentId = ${{ steps.start_comment.outputs.comment_id }};
 
             let message = '';
-            if (committed === 'true') {
+            if (mode === 'initial' && hasDiff === 'false') {
+              message = '✅ README 마지막 업데이트 이후 코드 변경사항이 없어 업데이트가 필요하지 않습니다.';
+            } else if (committed === 'true') {
               message = mode === 'refine'
                 ? `✅ 지시사항을 반영해서 README를 수정했습니다.\n\n추가 수정이 필요하면 \`/update-readme <지시사항>\` 으로 알려주세요.`
                 : `✅ README를 업데이트했습니다.\n\n수정이 필요하면 \`/update-readme <지시사항>\` 으로 알려주세요.\n예) \`/update-readme 설치 방법 섹션을 더 자세하게 작성해줘\``;
-            } else {
+            } else if (committed === 'false') {
               message = mode === 'refine'
                 ? `ℹ️ 지시사항을 검토했지만 변경할 내용이 없다고 판단했습니다.`
                 : `ℹ️ 코드 변경사항이 있지만 README에 반영할 내용이 없다고 판단했습니다.`;
+            } else {
+              message = '❌ 워크플로우 실행 중 오류가 발생했습니다. Actions 로그를 확인해주세요.';
             }
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            await github.rest.issues.updateComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
+              comment_id: commentId,
               body: message
-            })
+            });
